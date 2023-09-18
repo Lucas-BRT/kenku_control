@@ -7,7 +7,7 @@ async fn main() {
 
     let kenku_controler = Controller::new(ip, port);
 
-    let response = kenku_controler.get_soundboard().await.unwrap();
+    let response = kenku_controler.get_playlist().await.unwrap();
 
-    println!("{:#?}", response.get_sounds());
+    println!("{:#?}", response);
 }
