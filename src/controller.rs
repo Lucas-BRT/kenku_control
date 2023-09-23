@@ -1,19 +1,14 @@
+use crate::{
+    playlist::{
+        response::{self, *},
+        track::*,
+    },
+    soundboard::{response::*, sound::*},
+};
 use reqwest::{self, Client};
-use std::time::Duration;
-
-use crate::{playlist, soundboard};
+use std::{error::Error, string, time::Duration};
 
 #[derive(Debug)]
-pub enum Kind {
-    KenkuServerOffLine,
-}
-
-#[derive(Debug)]
-pub struct Error {
-    pub kind: Kind,
-    pub mensage: String,
-}
-
 pub enum KenkuState {
     Online,
     Offline,
@@ -38,66 +33,84 @@ pub async fn check_kenku_server_state(ip: &String, port: &String) -> KenkuState 
 
 #[derive(Debug)]
 pub struct Controller {
-    client: Client,
-    ip: String,
-    port: String,
+    pub client: Client,
+    pub ip: String,
+    pub port: String,
+    pub kenku_remote_state: KenkuState,
 }
 
+
+
 impl Controller {
-    pub async fn new(ip: String, port: String) -> Result<Controller, Error> {
+    pub fn new(ip: String, port: String) -> Controller {
         let client = build_client(5);
 
-        match check_kenku_server_state(&ip, &port).await {
-            KenkuState::Online => Ok(Controller {
-                client: client,
-                ip: ip,
-                port: port,
-            }),
-
-            KenkuState::Offline => Err(Error {
-                kind: Kind::KenkuServerOffLine,
-                mensage: String::from("Turn on kenku remote in Kenku FM."),
-            }),
+        Controller {
+            client: client,
+            ip: ip,
+            port: port,
+            kenku_remote_state: KenkuState::Offline,
         }
     }
 
-    pub fn get_ip(&self) -> String {
-        return self.ip.clone();
-    }
-
-    pub fn get_port(&self) -> String {
-        return self.port.clone();
-    }
-
-    pub fn get_client(&self) -> Client {
-        return self.client.clone();
-    }
-
-    pub async fn get_soundboard(&self) -> Result<soundboard::SoundboardResponse, reqwest::Error> {
-        let get_soundboard_url = format!("http://{}:{}/v1/soundboard", self.ip, self.port);
+    pub async fn get_soundboard(&self) -> Result<SoundboardGetResponse, reqwest::Error> {
+        let url = format!("http://{}:{}/v1/soundboard", self.ip, self.port);
 
         let response = self
             .client
-            .get(get_soundboard_url)
+            .get(url)
             .send()
             .await?
-            .json::<soundboard::SoundboardResponse>()
+            .json::<SoundboardGetResponse>()
             .await?;
 
         Ok(response)
     }
 
-    pub async fn get_playlist(&self) -> Result<playlist::PlaylistResponse, reqwest::Error> {
-        let get_playlist_url = format!("http://{}:{}/v1/playlist", self.ip, self.port);
+    pub async fn get_soundboard_playback_state(&self) -> Result<SoundboardPlaybackResponse, reqwest::Error> {
+        let url = format!("http://{}:{}/v1/soundboard/playback", self.ip, self.port);
 
         let response = self
             .client
-            .get(get_playlist_url)
+            .get(url)
             .send()
             .await?
-            .json::<playlist::PlaylistResponse>()
+            .json::<SoundboardPlaybackResponse>()
             .await?;
 
         Ok(response)
     }
+
+    pub async fn get_playlist(&self) -> Result<PlaylistGetResponse, reqwest::Error> {
+        let url = format!("http://{}:{}/v1/playlist", self.ip, self.port);
+
+        let response = self
+            .client
+            .get(url)
+            .send()
+            .await?
+            .json::<PlaylistGetResponse>()
+            .await?;
+
+        Ok(response)
+    }
+
+    pub async fn get_playlist_playback_state(&self) -> Result<PlaylistPlayback, reqwest::Error> {
+
+        let url = format!("http://{}:{}/v1/playlist/playback", self.ip, self.port);
+
+        let response = self
+            .client
+            .get(url)
+            .send()
+            .await?
+            .json::<PlaylistPlayback>()
+            .await?;
+
+        Ok(response)        
+
+    }
+
+    
+
 }
