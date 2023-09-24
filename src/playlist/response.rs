@@ -25,7 +25,7 @@ impl PlaylistGetResponse {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct PlaylistPlayback {
+pub struct PlaylistPlaybackResponse {
     pub playing: bool,
     pub volume: f64,
     pub muted: bool,
@@ -34,7 +34,3 @@ pub struct PlaylistPlayback {
     pub tracks: Option<Vec<Track>>,
     pub playlist: Option<Playlist>,
 }
-
-
-
-

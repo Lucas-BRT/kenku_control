@@ -24,5 +24,3 @@ pub struct Sounds {
     pub duration: Option<u32>,
     pub progress: Option<f64>,
 }
-
-

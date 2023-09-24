@@ -18,6 +18,6 @@ impl SoundboardGetResponse {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct SoundboardPlaybackResponse { 
-    sounds: Vec<Sounds>
+pub struct SoundboardPlaybackResponse {
+    sounds: Vec<Sounds>,
 }

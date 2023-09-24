@@ -17,7 +17,6 @@ Cargo.lock
 # Added by cargo
 
 /target
-src/main.rs
 
 # Visual Studio Code config files
 ./vscode
