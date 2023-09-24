@@ -1,12 +1,6 @@
-use crate::{
-    playlist::{
-        response::{self, *},
-        track::*,
-    },
-    soundboard::{response::*, sound::*},
-};
+use crate::{playlist::response::*, soundboard::response::*};
 use reqwest::{self, Client};
-use std::{error::Error, string, time::Duration};
+use std::time::Duration;
 
 /// Represents the state of the Kenku server.
 ///
