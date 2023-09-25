@@ -1,12 +1,13 @@
 //#![allow(unused)]
 
-use controller::Controller;
 ///! kenku_control
 ///!
 ///! A library for manage your Kenku FM using remote acess.
-pub mod controller;
-pub mod playlist;
-pub mod soundboard;
+use lib::Controller;
+pub mod lib;
+
+
+extern crate kenku_control;
 
 #[tokio::main]
 async fn main() {
