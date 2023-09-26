@@ -5,6 +5,9 @@ edition = "2021"
 authors = ["Lucas-BRT"]
 description = "A library for manage Kenku FM using Kenku Remote"
 license = "MIT"
+repository = "https://github.com/Lucas-BRT/kenku_control"
+keywords = ["kenku FM", "TTRPG", "Sound"]
+documentation = "https://docs.rs/kenku_control/0.1.0/kenku_control/"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
