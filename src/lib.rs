@@ -66,11 +66,11 @@ pub mod soundboard {
     /// * `url` - The URL where the sound file is located.
     /// * `title` - The title of the sound.
     /// * `_loop` - A boolean indicating whether the sound should loop.
-    /// * `volume` - The volume level of the sound, represented as a floating point number.
+    /// * `volume` - The volume level of the sound, represented as a floating point number between 0-1.
     /// * `fade_in` - The duration of the fade-in effect at the start of the sound, in milliseconds.
     /// * `fade_out` - The duration of the fade-out effect at the end of the sound, in milliseconds.
-    /// * `duration` - The total duration of the sound, in milliseconds. This is an optional field.
-    /// * `progress` - The current progress of the sound, represented as a percentage. This is an optional field.
+    /// * `duration` - The total duration of the sound, in milliseconds. This is an optional field and only is need in playback response.
+    /// * `progress` - The current progress of the sound, starts in 0 and go to duration. This is an optional field and only is need in playback response.
     #[derive(Debug, Deserialize, Serialize, Clone)]
     pub struct Sounds {
         pub id: String,
@@ -88,6 +88,33 @@ pub mod soundboard {
     }
 
     impl Sounds {
+        /// Sends a request to the Kenku server to play a specific sound in the soundboard.
+        ///
+        /// This function constructs a URL for the 'SoundboardPlay' command, sends a PUT request to that URL with the track ID as JSON payload, and returns the HTTP status code of the response.
+        ///
+        /// # Arguments
+        ///
+        /// * `self` - A reference to the `Sound` struct, which represents a sound in the soundboard.
+        /// * `controller` - A reference to a `Controller` struct, which includes a HTTP client, the IP address and port of the server, and the current state of the server.
+        ///
+        /// # Returns
+        ///
+        /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// let ip = "127.0.0.1".to_string();
+        /// let port = "3333".to_string();
+        ///
+        /// let controller = Controller::new(ip, port);
+        ///
+        /// let playlist = controller.get_soundboard().await.unwrap();
+        /// let sounds = playlist.sounds;  
+        /// for sound in sounds {
+        ///     sound.play(&controller).await;
+        /// }
+        /// ```
         pub async fn play(&self, controller: &Controller) -> Result<StatusCode, reqwest::Error> {
             let command = &KenkuCommand::KenkuPut(KenkuPutCommand::SoundboardPlay);
 
@@ -106,6 +133,33 @@ pub mod soundboard {
             Ok(response)
         }
 
+        /// Sends a request to the Kenku server to stop a specific sound in the soundboard.
+        ///
+        /// This function constructs a URL for the 'SoundboardPlay' command, sends a PUT request to that URL with the track ID as JSON payload, and returns the HTTP status code of the response.
+        ///
+        /// # Arguments
+        ///
+        /// * `self` - A reference to the `Sound` struct, which represents a sound in the soundboard.
+        /// * `controller` - A reference to a `Controller` struct, which includes a HTTP client, the IP address and port of the server, and the current state of the server.
+        ///
+        /// # Returns
+        ///
+        /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// let ip = "127.0.0.1".to_string();
+        /// let port = "3333".to_string();
+        ///
+        /// let controller = Controller::new(ip, port);
+        ///
+        /// let playlist = controller.get_soundboard().await.unwrap();
+        /// let sounds = playlist.sounds;  
+        /// for sound in sounds {
+        ///     sound.stop(&controller).await;
+        /// }
+        /// ```
         pub async fn stop(&self, controller: &Controller) -> Result<StatusCode, reqwest::Error> {
             let command = &KenkuCommand::KenkuPut(KenkuPutCommand::SoundboardStop);
 
@@ -128,11 +182,10 @@ pub mod soundboard {
 
 pub mod playlist {
 
-    use reqwest::{Request, StatusCode};
+    use super::*;
+    use reqwest::StatusCode;
     use serde::{Deserialize, Serialize};
     use serde_json::json;
-
-    use super::*;
 
     /// Represents the repeat mode for a playlist or track.
     ///
@@ -164,9 +217,6 @@ pub mod playlist {
         pub tracks: Vec<Track>,
     }
 
-    /// Provides methods for `PlaylistGetResponse`.
-    ///
-    /// This implementation provides a method for getting the playlists from a `PlaylistGetResponse`.
     impl PlaylistGetResponse {
         /// Returns a reference to the vector of `Playlist` in the `PlaylistGetResponse`.
         ///
@@ -180,12 +230,12 @@ pub mod playlist {
 
     /// Represents the response from a playback request to a playlist.
     ///
-    /// This struct is used to model the response from a playback request to a playlist. It includes the playback status and settings, as well as the current track and playlist.
+    /// This struct is used to model the response from a playback request to a playlist.
     ///
     /// # Fields
     ///
     /// * `playing` - A boolean indicating whether the playlist is currently playing.
-    /// * `volume` - The volume level of the playback, represented as a floating point number.
+    /// * `volume` - The volume level of the playback, represented as a floating point number between 0-1.
     /// * `muted` - A boolean indicating whether the playback is muted.
     /// * `shuffle` - A boolean indicating whether the tracks are being played in shuffle mode.
     /// * `repeat` - The current repeat mode, represented as a `Repeat` enum.
@@ -241,6 +291,33 @@ pub mod playlist {
     }
 
     impl Track {
+        /// Sends a request to the Kenku server to play a specific track in the playlist.
+        ///
+        /// This function constructs a URL for the 'PlaylistPlay' command, sends a PUT request to that URL with the track ID as JSON payload, and returns the HTTP status code of the response.
+        ///
+        /// # Arguments
+        ///
+        /// * `self` - A reference to the `Track` struct, which represents a track in the playlist.
+        /// * `controller` - A reference to a `Controller` struct, which includes a HTTP client, the IP address and port of the server, and the current state of the server.
+        ///
+        /// # Returns
+        ///
+        /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// let ip = "127.0.0.1".to_string();
+        /// let port = "3333".to_string();
+        ///
+        /// let controller = Controller::new(ip, port);
+        ///
+        /// let playlist = controller.get_playlist().await.unwrap();
+        /// let tracks = playlist.tracks;  
+        /// for track in tracks {
+        ///     track.play(&controller).await;
+        /// }
+        /// ```
         pub async fn play(&self, controller: &Controller) -> Result<StatusCode, reqwest::Error> {
             let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlay);
 
@@ -310,7 +387,7 @@ pub fn build_client(milisseconds: u64) -> Client {
 /// # Examples
 ///
 /// ```
-/// let state = check_kenku_server_state(&"localhost".to_string(), &"8080".to_string()).await;
+/// let state = check_kenku_server_state(&"127.0.0.1".to_string(), &"3333".to_string()).await;
 /// println!("{:?}", state);
 /// ```
 pub async fn check_kenku_server_state(ip: &String, port: &String) -> KenkuState {
@@ -408,12 +485,36 @@ pub enum KenkuPlaybackCommand {
     PlaylistPlaybackRepeat(Repeat),
 }
 
+/// Represents a command to be sent to the Kenku server.
+///
+/// The `KenkuCommand` enum is used to encapsulate different types of commands that can be sent to the Kenku server, such as GET, PUT, and POST commands.
+///
+/// # Variants
+///
+/// * `KenkuGet` - Represents a GET command with a specific `KenkuGetCommand` payload.
+/// * `KenkuPut` - Represents a PUT command with a specific `KenkuPutCommand` payload.
+/// * `KenkuPost` - Represents a POST command with a specific `KenkuPostCommand` payload.
 pub enum KenkuCommand {
     KenkuGet(KenkuGetCommand),
     KenkuPut(KenkuPutCommand),
     KenkuPost(KenkuPostCommand),
 }
 
+/// Represents the different types of PUT commands that can be sent to the Kenku server.
+///
+/// The `KenkuPutCommand` enum is used to specify the type of PUT command to be sent to the Kenku server. It includes commands related to soundboard playback and playlist playback control.
+///
+/// # Variants
+///
+/// * `SoundboardPlay` - Represents a command to play a soundboard item.
+/// * `SoundboardStop` - Represents a command to stop the playback of a soundboard item.
+/// * `PlaylistPlay` - Represents a command to play a track in the playlist.
+/// * `PlaylistPlaybackPlay` - Represents a command to resume playback of the current track in the playlist.
+/// * `PlaylistPlaybackPause` - Represents a command to pause the playback of the current track in the playlist.
+/// * `PlaylistPlaybackMute` - Represents a command to mute the playback of the current track in the playlist.
+/// * `PlaylistPlaybackVolume` - Represents a command to adjust the volume of the playback of the current track in the playlist.
+/// * `PlaylistPlaybackShuffle` - Represents a command to enable or disable shuffle mode for the playlist playback.
+/// * `PlaylistPlaybackRepeat` - Represents a command to enable or disable repeat mode for the playlist playback.
 pub enum KenkuPutCommand {
     SoundboardPlay,
     SoundboardStop,
@@ -426,6 +527,14 @@ pub enum KenkuPutCommand {
     PlaylistPlaybackRepeat,
 }
 
+/// Represents the different types of POST commands that can be sent to the Kenku server.
+///
+/// The `KenkuPostCommand` enum is used to specify the type of POST command to be sent to the Kenku server. It includes commands related to playlist playback control.
+///
+/// # Variants
+///
+/// * `PlaylistPlaybackNext` - Represents a command to play the next track in the playlist.
+/// * `PlaylistPlaybackPrevious` - Represents a command to play the previous track in the playlist.
 pub enum KenkuPostCommand {
     PlaylistPlaybackNext,
     PlaylistPlaybackPrevious,
@@ -467,15 +576,12 @@ pub enum KenkuResponse {
 /// # Examples
 ///
 /// ```
-/// let controller = Controller {
-///     client: Client::new(),
-///     ip: "localhost".to_string(),
-///     port: "8080".to_string(),
-///     kenku_remote_state: KenkuState::Online,
-/// };
+/// let ip = "127.0.0.1".to_string();
+/// let port = "3333".to_string();
+/// 
+/// let controller = Controller::new(ip, port);
 ///
 /// let result = playback_play(&controller).await;
-/// assert!(result.is_ok());
 /// ```
 pub async fn playback_play(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
     let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPlay);
@@ -501,19 +607,12 @@ pub async fn playback_play(controller: &Controller) -> Result<StatusCode, reqwes
 /// # Examples
 ///
 /// ```
-/// let controller = Controller {
-///     client: Client::new(),
-///     ip: "localhost".to_string(),
-///     port: "8080".to_string(),
-///     kenku_remote_state: KenkuState::Online,
-/// };
+/// let ip = "127.0.0.1".to_string();
+/// let port = "3333".to_string();
+/// 
+/// let controller = Controller::new(ip, port);
 ///
 /// let result = playback_pause(&controller).await;
-///
-/// match result {
-///     Ok(status) => println!("HTTP Status: {}", status),
-///     Err(e) => println!("Error: {}", e),
-/// }
 /// ```
 pub async fn playback_pause(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
     let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPause);
@@ -539,19 +638,12 @@ pub async fn playback_pause(controller: &Controller) -> Result<StatusCode, reqwe
 /// # Examples
 ///
 /// ```
-/// let controller = Controller {
-///     client: Client::new(),
-///     ip: "localhost".to_string(),
-///     port: "8080".to_string(),
-///     kenku_remote_state: KenkuState::Online,
-/// };
+/// let ip = "127.0.0.1".to_string();
+/// let port = "3333".to_string();
+/// 
+/// let controller = Controller::new(ip, port);
 ///
 /// let result = playback_next(&controller).await;
-///
-/// match result {
-///     Ok(status) => println!("HTTP Status: {}", status),
-///     Err(e) => println!("Error: {}", e),
-/// }
 /// ```
 pub async fn playback_next(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
     let command = &KenkuCommand::KenkuPost(KenkuPostCommand::PlaylistPlaybackNext);
@@ -578,15 +670,13 @@ pub async fn playback_next(controller: &Controller) -> Result<StatusCode, reqwes
 /// # Examples
 ///
 /// ```
-/// let controller = Controller {
-///     client: Client::new(),
-///     ip: "localhost".to_string(),
-///     port: "8080".to_string(),
-///     kenku_remote_state: KenkuState::Online,
-/// };
+/// let ip = "127.0.0.1".to_string();
+/// let port = "3333".to_string();
+/// 
+/// let controller = Controller::new(ip, port);
+/// 
 /// let mute = true;
 /// let status = playback_mute(&controller, mute).await;
-/// assert_eq!(status, Ok(StatusCode::OK));
 /// ```
 pub async fn playback_mute(
     controller: &Controller,
@@ -625,9 +715,12 @@ pub async fn playback_mute(
 /// # Examples
 ///
 /// ```
-/// let controller = Controller::new();
+/// let ip = "127.0.0.1".to_string();
+/// let port = "3333".to_string();
+/// 
+/// let controller = Controller::new(ip, port);
+/// 
 /// let result = playback_volume(&controller, 0.5).await;
-/// assert!(result.is_ok());
 /// ```
 pub async fn playback_volume(
     controller: &Controller,
@@ -673,9 +766,12 @@ pub async fn playback_volume(
 /// # Examples
 ///
 /// ```
-/// let controller = Controller::new();
+/// let ip = "127.0.0.1".to_string();
+/// let port = "3333".to_string();
+/// 
+/// let controller = Controller::new(ip, port);
+/// 
 /// let result = playback_shuffle(&controller, true).await;
-/// assert!(result.is_ok());
 /// ```
 pub async fn playback_shuffle(
     controller: &Controller,
@@ -720,15 +816,13 @@ pub async fn playback_shuffle(
 /// # Examples
 ///
 /// ```
-/// let controller = Controller {
-///     client: Client::new(),
-///     ip: "localhost".to_string(),
-///     port: "8080".to_string(),
-///     kenku_remote_state: KenkuState::Online,
-/// };
+/// let ip = "127.0.0.1".to_string();
+/// let port = "3333".to_string();
+/// 
+/// let controller = Controller::new(ip, port);
+/// 
 /// let repeat = Repeat::Playlist;
 /// let status = playback_repeat(&controller, repeat).await;
-/// assert_eq!(status, Ok(StatusCode::OK));
 /// ```
 pub async fn playback_repeat(
     controller: &Controller,
@@ -788,6 +882,15 @@ impl Controller {
     /// # Returns
     ///
     /// This function returns a new `Controller` with the specified IP address, port, and an initial server state of `KenkuState::Offline`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// let ip = "127.0.0.1".to_string();
+    /// let port = "3333".to_string();
+    /// 
+    /// let controller = Controller::new(ip, port);
+    /// ```
     pub fn new(ip: String, port: String) -> Controller {
         let client = build_client(20);
 
@@ -806,6 +909,16 @@ impl Controller {
     /// # Returns
     ///
     /// A `Result` which is either a `SoundboardGetResponse` or a `reqwest::Error`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// let ip = "127.0.0.1".to_string();
+    /// let port = "3333".to_string();
+    /// 
+    /// let controller = Controller::new(ip, port);
+    /// controller.get_soundboard().await.unwrap();
+    /// ```
     pub async fn get_soundboard(&self) -> Result<SoundboardGetResponse, reqwest::Error> {
         let url = process_url(
             &KenkuCommand::KenkuGet(KenkuGetCommand::Soundboard),
@@ -829,6 +942,16 @@ impl Controller {
     /// # Returns
     ///
     /// A `Result` which is either a `SoundboardPlaybackResponse` or a `reqwest::Error`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// let ip = "127.0.0.1".to_string();
+    /// let port = "3333".to_string();
+    /// 
+    /// let controller = Controller::new(ip, port);
+    /// controller.get_soundboard_playback().await.unwrap();
+    /// ```
     pub async fn get_soundboard_playback(
         &self,
     ) -> Result<SoundboardPlaybackResponse, reqwest::Error> {
@@ -854,6 +977,16 @@ impl Controller {
     /// # Returns
     ///
     /// A `Result` which is either a `PlaylistGetResponse` or a `reqwest::Error`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// let ip = "127.0.0.1".to_string();
+    /// let port = "3333".to_string();
+    /// 
+    /// let controller = Controller::new(ip, port);
+    /// controller.get_playlist().await.unwrap();
+    /// ```
     pub async fn get_playlist(&self) -> Result<PlaylistGetResponse, reqwest::Error> {
         let url = process_url(
             &KenkuCommand::KenkuGet(KenkuGetCommand::Playlist),
@@ -877,6 +1010,16 @@ impl Controller {
     /// # Returns
     ///
     /// A `Result` which is either a `PlaylistPlaybackResponse` or a `reqwest::Error`.
+    /// 
+    /// # Examples
+    /// 
+    /// ```
+    /// let ip = "127.0.0.1".to_string();
+    /// let port = "3333".to_string();
+    /// 
+    /// let controller = Controller::new(ip, port);
+    /// controller.get_playlist_playback().await.unwrap();
+    /// ```
     pub async fn get_playlist_playback(&self) -> Result<PlaylistPlaybackResponse, reqwest::Error> {
         let url = process_url(
             &KenkuCommand::KenkuGet(KenkuGetCommand::PlaylistPlayback),
