@@ -1,6 +1,6 @@
-//! # Kenku Controll
+//! # Kenku Control
 //!
-//! ´Kenku Controll´ is a API to manage your Kenku FM using Rust.
+//! `Kenku Control` is a API to manage your Kenku FM using Rust.
 
 use playlist::*;
 use reqwest::{self, Client, StatusCode};
