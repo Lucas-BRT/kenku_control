@@ -1,8 +1,14 @@
+//! # Kenku Controll
+//!
+//! ´Kenku Controll´ is a API to manage your Kenku FM using Rust.
+
 use playlist::*;
 use reqwest::{self, Client, StatusCode};
 use serde_json::json;
 use soundboard::*;
 use std::time::Duration;
+
+/// all the content of Soundboard of Kenku FM
 
 pub mod soundboard {
 
@@ -180,6 +186,7 @@ pub mod soundboard {
     }
 }
 
+/// all the content of Playlist of Kenku FM
 pub mod playlist {
 
     use super::*;
@@ -578,7 +585,7 @@ pub enum KenkuResponse {
 /// ```
 /// let ip = "127.0.0.1".to_string();
 /// let port = "3333".to_string();
-/// 
+///
 /// let controller = Controller::new(ip, port);
 ///
 /// let result = playback_play(&controller).await;
@@ -609,7 +616,7 @@ pub async fn playback_play(controller: &Controller) -> Result<StatusCode, reqwes
 /// ```
 /// let ip = "127.0.0.1".to_string();
 /// let port = "3333".to_string();
-/// 
+///
 /// let controller = Controller::new(ip, port);
 ///
 /// let result = playback_pause(&controller).await;
@@ -640,7 +647,7 @@ pub async fn playback_pause(controller: &Controller) -> Result<StatusCode, reqwe
 /// ```
 /// let ip = "127.0.0.1".to_string();
 /// let port = "3333".to_string();
-/// 
+///
 /// let controller = Controller::new(ip, port);
 ///
 /// let result = playback_next(&controller).await;
@@ -672,9 +679,9 @@ pub async fn playback_next(controller: &Controller) -> Result<StatusCode, reqwes
 /// ```
 /// let ip = "127.0.0.1".to_string();
 /// let port = "3333".to_string();
-/// 
+///
 /// let controller = Controller::new(ip, port);
-/// 
+///
 /// let mute = true;
 /// let status = playback_mute(&controller, mute).await;
 /// ```
@@ -717,9 +724,9 @@ pub async fn playback_mute(
 /// ```
 /// let ip = "127.0.0.1".to_string();
 /// let port = "3333".to_string();
-/// 
+///
 /// let controller = Controller::new(ip, port);
-/// 
+///
 /// let result = playback_volume(&controller, 0.5).await;
 /// ```
 pub async fn playback_volume(
@@ -768,9 +775,9 @@ pub async fn playback_volume(
 /// ```
 /// let ip = "127.0.0.1".to_string();
 /// let port = "3333".to_string();
-/// 
+///
 /// let controller = Controller::new(ip, port);
-/// 
+///
 /// let result = playback_shuffle(&controller, true).await;
 /// ```
 pub async fn playback_shuffle(
@@ -818,9 +825,9 @@ pub async fn playback_shuffle(
 /// ```
 /// let ip = "127.0.0.1".to_string();
 /// let port = "3333".to_string();
-/// 
+///
 /// let controller = Controller::new(ip, port);
-/// 
+///
 /// let repeat = Repeat::Playlist;
 /// let status = playback_repeat(&controller, repeat).await;
 /// ```
@@ -882,13 +889,13 @@ impl Controller {
     /// # Returns
     ///
     /// This function returns a new `Controller` with the specified IP address, port, and an initial server state of `KenkuState::Offline`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// let ip = "127.0.0.1".to_string();
     /// let port = "3333".to_string();
-    /// 
+    ///
     /// let controller = Controller::new(ip, port);
     /// ```
     pub fn new(ip: String, port: String) -> Controller {
@@ -909,13 +916,13 @@ impl Controller {
     /// # Returns
     ///
     /// A `Result` which is either a `SoundboardGetResponse` or a `reqwest::Error`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// let ip = "127.0.0.1".to_string();
     /// let port = "3333".to_string();
-    /// 
+    ///
     /// let controller = Controller::new(ip, port);
     /// controller.get_soundboard().await.unwrap();
     /// ```
@@ -942,13 +949,13 @@ impl Controller {
     /// # Returns
     ///
     /// A `Result` which is either a `SoundboardPlaybackResponse` or a `reqwest::Error`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// let ip = "127.0.0.1".to_string();
     /// let port = "3333".to_string();
-    /// 
+    ///
     /// let controller = Controller::new(ip, port);
     /// controller.get_soundboard_playback().await.unwrap();
     /// ```
@@ -977,13 +984,13 @@ impl Controller {
     /// # Returns
     ///
     /// A `Result` which is either a `PlaylistGetResponse` or a `reqwest::Error`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// let ip = "127.0.0.1".to_string();
     /// let port = "3333".to_string();
-    /// 
+    ///
     /// let controller = Controller::new(ip, port);
     /// controller.get_playlist().await.unwrap();
     /// ```
@@ -1010,13 +1017,13 @@ impl Controller {
     /// # Returns
     ///
     /// A `Result` which is either a `PlaylistPlaybackResponse` or a `reqwest::Error`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// let ip = "127.0.0.1".to_string();
     /// let port = "3333".to_string();
-    /// 
+    ///
     /// let controller = Controller::new(ip, port);
     /// controller.get_playlist_playback().await.unwrap();
     /// ```
