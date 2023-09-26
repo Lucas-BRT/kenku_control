@@ -13,4 +13,4 @@ fn main() {
     let port = "3333".to_string();
 
     let controller = Controller::new(ip, port);
-} 
+}
