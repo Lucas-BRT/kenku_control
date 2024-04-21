@@ -4,7 +4,7 @@
 
 use reqwest::{self, Client, StatusCode};
 use serde_json::json;
-use std::{time::Duration, u16};
+use std::{time::Duration, u16, u64};
 
 pub mod playlist;
 pub mod soundboard;
@@ -54,8 +54,8 @@ fn build_client(milisseconds: u64) -> Client {
 /// # Returns
 ///
 /// This function returns a `KenkuState` that represents the state of the server. If the GET request is successful, it returns `KenkuState::Online`. If the GET request fails, it returns `KenkuState::Offline`.
-pub async fn check_kenku_server_state(ip: &str, port: u16) -> KenkuState {
-    let client = build_client(5);
+pub async fn check_kenku_server_state(ip: &str, port: u16, delay_in_milisseconds: u64) -> KenkuState {
+    let client = build_client(delay_in_milisseconds);
     let test_url = format!("http://{}:{}", ip, port);
 
     match client.get(test_url).send().await {
@@ -77,7 +77,7 @@ pub async fn check_kenku_server_state(ip: &str, port: u16) -> KenkuState {
 /// # Returns
 ///
 /// This function returns a `String` that represents the constructed URL.
-pub fn process_url(command: &KenkuCommand, ip: &String, port: &String) -> String {
+fn process_url(command: &KenkuCommand, ip: &String, port: &String) -> String {
     match command {
         KenkuCommand::KenkuGet(get_command) => match get_command {
             KenkuGetCommand::Soundboard => format!("http://{}:{}/v1/soundboard", ip, port),
