@@ -93,21 +93,6 @@ impl Sounds {
     /// # Returns
     ///
     /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let ip = "127.0.0.1".to_string();
-    /// let port = "3333".to_string();
-    ///
-    /// let controller = Controller::new(ip, port);
-    ///
-    /// let playlist = controller.get_soundboard().await.unwrap();
-    /// let sounds = playlist.sounds;  
-    /// for sound in sounds {
-    ///     sound.play(&controller).await;
-    /// }
-    /// ```
     pub async fn play(&self, controller: &Controller) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::SoundboardPlay);
 
@@ -138,21 +123,6 @@ impl Sounds {
     /// # Returns
     ///
     /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let ip = "127.0.0.1".to_string();
-    /// let port = "3333".to_string();
-    ///
-    /// let controller = Controller::new(ip, port);
-    ///
-    /// let playlist = controller.get_soundboard().await.unwrap();
-    /// let sounds = playlist.sounds;  
-    /// for sound in sounds {
-    ///     sound.stop(&controller).await;
-    /// }
-    /// ```
     pub async fn stop(&self, controller: &Controller) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::SoundboardStop);
 
@@ -171,15 +141,4 @@ impl Sounds {
         Ok(response)
     }
 }
-
-
-
-
-
-
-
-
-
-
-
 

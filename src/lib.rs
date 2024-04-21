@@ -54,13 +54,6 @@ pub fn build_client(milisseconds: u64) -> Client {
 /// # Returns
 ///
 /// This function returns a `KenkuState` that represents the state of the server. If the GET request is successful, it returns `KenkuState::Online`. If the GET request fails, it returns `KenkuState::Offline`.
-///
-/// # Examples
-///
-/// ```
-/// let state = check_kenku_server_state(&"127.0.0.1".to_string(), &"3333".to_string()).await;
-/// println!("{:?}", state);
-/// ```
 pub async fn check_kenku_server_state(ip: &String, port: &String) -> KenkuState {
     let client = build_client(5);
     let test_url = format!("http://{}:{}", ip, port);
@@ -84,16 +77,6 @@ pub async fn check_kenku_server_state(ip: &String, port: &String) -> KenkuState 
 /// # Returns
 ///
 /// This function returns a `String` that represents the constructed URL.
-///
-/// # Examples
-///
-/// ```
-/// let command = KenkuGetCommand::Soundboard;
-/// let ip = "localhost";
-/// let port = "8080";
-/// let url = process_url(&command, &ip, &port);
-/// assert_eq!(url, "http://localhost:8080/v1/soundboard");
-/// ```
 pub fn process_url(command: &KenkuCommand, ip: &String, port: &String) -> String {
     match command {
         KenkuCommand::KenkuGet(get_command) => match get_command {
@@ -243,17 +226,6 @@ pub enum KenkuResponse {
 /// # Returns
 ///
 /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-///
-/// # Examples
-///
-/// ```
-/// let ip = "127.0.0.1".to_string();
-/// let port = "3333".to_string();
-///
-/// let controller = Controller::new(ip, port);
-///
-/// let result = playback_play(&controller).await;
-/// ```
 pub async fn playback_play(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
     let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPlay);
     let url = process_url(command, &controller.ip, &controller.port);
@@ -274,17 +246,6 @@ pub async fn playback_play(controller: &Controller) -> Result<StatusCode, reqwes
 /// # Returns
 ///
 /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-///
-/// # Examples
-///
-/// ```
-/// let ip = "127.0.0.1".to_string();
-/// let port = "3333".to_string();
-///
-/// let controller = Controller::new(ip, port);
-///
-/// let result = playback_pause(&controller).await;
-/// ```
 pub async fn playback_pause(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
     let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPause);
     let url = process_url(command, &controller.ip, &controller.port);
@@ -305,17 +266,6 @@ pub async fn playback_pause(controller: &Controller) -> Result<StatusCode, reqwe
 /// # Returns
 ///
 /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-///
-/// # Examples
-///
-/// ```
-/// let ip = "127.0.0.1".to_string();
-/// let port = "3333".to_string();
-///
-/// let controller = Controller::new(ip, port);
-///
-/// let result = playback_next(&controller).await;
-/// ```
 pub async fn playback_next(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
     let command = &KenkuCommand::KenkuPost(KenkuPostCommand::PlaylistPlaybackNext);
     let url = process_url(command, &controller.ip, &controller.port);
@@ -337,18 +287,6 @@ pub async fn playback_next(controller: &Controller) -> Result<StatusCode, reqwes
 /// # Returns
 ///
 /// This function returns a `Result` that contains a `StatusCode`, if the request was sent successfully, or a `reqwest::Error`, if the request failed.
-///
-/// # Examples
-///
-/// ```
-/// let ip = "127.0.0.1".to_string();
-/// let port = "3333".to_string();
-///
-/// let controller = Controller::new(ip, port);
-///
-/// let mute = true;
-/// let status = playback_mute(&controller, mute).await;
-/// ```
 pub async fn playback_mute(
     controller: &Controller,
     mute: bool,
@@ -382,17 +320,6 @@ pub async fn playback_mute(
 /// # Returns
 ///
 /// This function returns a `Result` with a `StatusCode`. If the PUT request is successful, it returns `Ok(StatusCode)`. If the PUT request fails, it returns `Err(reqwest::Error)`.
-///
-/// # Examples
-///
-/// ```
-/// let ip = "127.0.0.1".to_string();
-/// let port = "3333".to_string();
-///
-/// let controller = Controller::new(ip, port);
-///
-/// let result = playback_volume(&controller, 0.5).await;
-/// ```
 pub async fn playback_volume(
     controller: &Controller,
     volume: f64,
@@ -433,17 +360,6 @@ pub async fn playback_volume(
 /// # Returns
 ///
 /// This function returns a `Result` with a `StatusCode`. If the PUT request is successful, it returns `Ok(StatusCode)`. If the PUT request fails, it returns `Err(reqwest::Error)`.
-///
-/// # Examples
-///
-/// ```
-/// let ip = "127.0.0.1".to_string();
-/// let port = "3333".to_string();
-///
-/// let controller = Controller::new(ip, port);
-///
-/// let result = playback_shuffle(&controller, true).await;
-/// ```
 pub async fn playback_shuffle(
     controller: &Controller,
     shuffle: bool,
@@ -483,18 +399,6 @@ pub async fn playback_shuffle(
 /// # Returns
 ///
 /// This function returns a `Result` that contains a `StatusCode`, if the request was sent successfully, or a `reqwest::Error`, if the request failed.
-///
-/// # Examples
-///
-/// ```
-/// let ip = "127.0.0.1".to_string();
-/// let port = "3333".to_string();
-///
-/// let controller = Controller::new(ip, port);
-///
-/// let repeat = Repeat::Playlist;
-/// let status = playback_repeat(&controller, repeat).await;
-/// ```
 pub async fn playback_repeat(
     controller: &Controller,
     repeat: playlist::Repeat,
@@ -553,15 +457,6 @@ impl Controller {
     /// # Returns
     ///
     /// This function returns a new `Controller` with the specified IP address, port, and an initial server state of `KenkuState::Offline`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let ip = "127.0.0.1".to_string();
-    /// let port = "3333".to_string();
-    ///
-    /// let controller = Controller::new(ip, port);
-    /// ```
     pub fn new(ip: String, port: String) -> Controller {
         let client = build_client(20);
 
@@ -580,16 +475,6 @@ impl Controller {
     /// # Returns
     ///
     /// A `Result` which is either a `SoundboardGetResponse` or a `reqwest::Error`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let ip = "127.0.0.1".to_string();
-    /// let port = "3333".to_string();
-    ///
-    /// let controller = Controller::new(ip, port);
-    /// controller.get_soundboard().await.unwrap();
-    /// ```
     pub async fn get_soundboard(&self) -> Result<soundboard::SoundboardGetResponse , reqwest::Error> {
         let url = process_url(
             &KenkuCommand::KenkuGet(KenkuGetCommand::Soundboard),
@@ -613,16 +498,6 @@ impl Controller {
     /// # Returns
     ///
     /// A `Result` which is either a `SoundboardPlaybackResponse` or a `reqwest::Error`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let ip = "127.0.0.1".to_string();
-    /// let port = "3333".to_string();
-    ///
-    /// let controller = Controller::new(ip, port);
-    /// controller.get_soundboard_playback().await.unwrap();
-    /// ```
     pub async fn get_soundboard_playback(
         &self,
     ) -> Result<soundboard::SoundboardPlaybackResponse, reqwest::Error> {
@@ -648,16 +523,6 @@ impl Controller {
     /// # Returns
     ///
     /// A `Result` which is either a `PlaylistGetResponse` or a `reqwest::Error`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let ip = "127.0.0.1".to_string();
-    /// let port = "3333".to_string();
-    ///
-    /// let controller = Controller::new(ip, port);
-    /// controller.get_playlist().await.unwrap();
-    /// ```
     pub async fn get_playlist(&self) -> Result<playlist::PlaylistGetResponse, reqwest::Error> {
         let url = process_url(
             &KenkuCommand::KenkuGet(KenkuGetCommand::Playlist),
@@ -681,16 +546,6 @@ impl Controller {
     /// # Returns
     ///
     /// A `Result` which is either a `PlaylistPlaybackResponse` or a `reqwest::Error`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let ip = "127.0.0.1".to_string();
-    /// let port = "3333".to_string();
-    ///
-    /// let controller = Controller::new(ip, port);
-    /// controller.get_playlist_playback().await.unwrap();
-    /// ```
     pub async fn get_playlist_playback(&self) -> Result<playlist::PlaylistPlaybackResponse, reqwest::Error> {
         let url = process_url(
             &KenkuCommand::KenkuGet(KenkuGetCommand::PlaylistPlayback),

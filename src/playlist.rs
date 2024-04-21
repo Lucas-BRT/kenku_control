@@ -119,21 +119,6 @@ impl Track {
     /// # Returns
     ///
     /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let ip = "127.0.0.1".to_string();
-    /// let port = "3333".to_string();
-    ///
-    /// let controller = Controller::new(ip, port);
-    ///
-    /// let playlist = controller.get_playlist().await.unwrap();
-    /// let tracks = playlist.tracks;  
-    /// for track in tracks {
-    ///     track.play(&controller).await;
-    /// }
-    /// ```
     pub async fn play(&self, controller: &Controller) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlay);
 
