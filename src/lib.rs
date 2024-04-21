@@ -461,9 +461,9 @@ impl Controller {
         let client = build_client(20);
 
         Controller {
-            client: client,
-            ip: ip,
-            port: port,
+            client,
+            ip,
+            port,
             kenku_remote_state: KenkuState::Offline,
         }
     }
