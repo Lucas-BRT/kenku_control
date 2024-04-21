@@ -49,7 +49,8 @@ fn build_client(milisseconds: u64) -> Client {
 /// # Arguments
 ///
 /// * `ip` - A string slice that holds the IP address of the server.
-/// * `port` - A string slice that holds the port number of the server.
+/// * `port` - A 16 unsigned byte that holds the port number of the server.
+/// * `delay_in_milisseconds` - A 16 unsigned byte that holds the time in milisseconds for the connection timeout.
 ///
 /// # Returns
 ///
