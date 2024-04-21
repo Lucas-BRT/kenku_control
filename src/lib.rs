@@ -4,7 +4,7 @@
 
 use reqwest::{self, Client, StatusCode};
 use serde_json::json;
-use std::time::Duration;
+use std::{time::Duration, u16};
 
 pub mod playlist;
 pub mod soundboard;
@@ -14,7 +14,7 @@ pub mod soundboard;
 /// This enum has two variants:
 /// * `Online`: Represents that the Kenku server is online and reachable.
 /// * `Offline`: Represents that the Kenku server is offline or not reachable.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum KenkuState {
     Online,
     Offline,
@@ -35,7 +35,7 @@ pub enum KenkuState {
 /// # Panics
 ///
 /// This function will panic if the client builder fails to build the client.
-pub fn build_client(milisseconds: u64) -> Client {
+fn build_client(milisseconds: u64) -> Client {
     return Client::builder()
         .timeout(Duration::from_millis(milisseconds))
         .build()
@@ -54,7 +54,7 @@ pub fn build_client(milisseconds: u64) -> Client {
 /// # Returns
 ///
 /// This function returns a `KenkuState` that represents the state of the server. If the GET request is successful, it returns `KenkuState::Online`. If the GET request fails, it returns `KenkuState::Offline`.
-pub async fn check_kenku_server_state(ip: &String, port: &String) -> KenkuState {
+pub async fn check_kenku_server_state(ip: &str, port: u16) -> KenkuState {
     let client = build_client(5);
     let test_url = format!("http://{}:{}", ip, port);
 
