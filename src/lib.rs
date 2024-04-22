@@ -65,12 +65,36 @@ pub async fn check_kenku_server_state(ip: &str, port: u16, delay_in_milisseconds
     }
 }
 
+/// Create a base url pathern to Kenku Remote
+///
+/// This function takes an IP address and a port, and return a String containing the link for the Kenku Remote server
+///
+/// # Arguments
+///
+/// * `ip` - A string slice that holds the ip addres of the server.
+/// * `port` - A unsigned 16 bit that hlds the port of the server.
+///
+/// # Returns
+///
+/// This function returns a `String` that contains the link containing the kenku remote ip and path
 fn format_base_url(ip: &str, port: u16) -> String {
     format!("http://{}:{}/v1", ip, port)
 }
 
-fn process_get_command(command: &KenkuGetCommand, ip: &str, port: u16) -> String {
-    let base_url = format_base_url(ip, port);
+/// Processes a GET command for the Kenku Remote server.
+///
+/// This function takes a `KenkuGetCommand`, an IP address, and a port, and returns
+/// a `String` containing the corresponding URL for the command on the Kenku Remote server.
+///
+/// # Arguments
+///
+/// * `command` - A `KenkuGetCommand` enum representing the type of GET command to process.
+/// * `base_url` - A string slice containg the url of the kenku remote
+///
+/// # Returns
+///
+/// Returns a `String` containing the formatted URL corresponding to the command on the Kenku Remote server.
+fn process_get_command(command: &KenkuGetCommand, base_url: &str) -> String {
     match command {
         KenkuGetCommand::Soundboard => format!("{}/soundboard", base_url),
         KenkuGetCommand::SoundboardPlayback => format!("{}/soundboard/playback", base_url),
@@ -79,8 +103,20 @@ fn process_get_command(command: &KenkuGetCommand, ip: &str, port: u16) -> String
     }
 }
 
-fn process_put_command(command: &KenkuPutCommand, ip: &str, port: u16) -> String {
-    let base_url = format_base_url(ip, port);
+/// Processes a PUT command for the Kenku Remote server.
+///
+/// This function takes a `KenkuPutCommand`, an IP address, and a port, and returns
+/// a `String` containing the corresponding URL for the command on the Kenku Remote server.
+///
+/// # Arguments
+///
+/// * `command` - A `KenkuPutCommand` enum representing the type of PUT command to process.
+/// * `base_url` - A string slice containg the url of the kenku remote
+///
+/// # Returns
+///
+/// Returns a `String` containing the formatted URL corresponding to the command on the Kenku Remote server.
+fn process_put_command(command: &KenkuPutCommand, base_url: &str) -> String {
     match command {
         KenkuPutCommand::PlaylistPlay => format!("{}/playlist/play", base_url),
         KenkuPutCommand::PlaylistPlaybackMute => format!("{}/playlist/playback/mute", base_url),
@@ -94,8 +130,20 @@ fn process_put_command(command: &KenkuPutCommand, ip: &str, port: u16) -> String
     }
 }
 
-fn process_post_command(command: &KenkuPostCommand, ip: &str, port: u16) -> String {
-    let base_url = format_base_url(ip, port);
+/// Processes a POST command for the Kenku Remote server.
+///
+/// This function takes a `KenkuPostCommand`, an IP address, and a port, and returns
+/// a `String` containing the corresponding URL for the command on the Kenku Remote server.
+///
+/// # Arguments
+///
+/// * `command` - A `KenkuPostCommand` enum representing the type of POST command to process.
+/// * `base_url` - A string slice containg the url of the kenku remote
+///
+/// # Returns
+///
+/// Returns a `String` containing the formatted URL corresponding to the command on the Kenku Remote server.
+fn process_post_command(command: &KenkuPostCommand, base_url: &str) -> String {
     match command {
         KenkuPostCommand::PlaylistPlaybackNext => format!("{}/playlist/playback/next", base_url),
         KenkuPostCommand::PlaylistPlaybackPrevious => format!("{}/playlist/playback/previous", base_url),
@@ -116,10 +164,11 @@ fn process_post_command(command: &KenkuPostCommand, ip: &str, port: u16) -> Stri
 ///
 /// This function returns a `String` that represents the constructed URL.
 fn process_url(command: &KenkuCommand, ip: &str, port: u16) -> String {
+    let base_url = format_base_url(ip, port);
     match command {
-        KenkuCommand::KenkuGet(get_command) => process_get_command(get_command, ip, port),
-        KenkuCommand::KenkuPut(put_command) => process_put_command(put_command, ip, port),
-        KenkuCommand::KenkuPost(post_command) => process_post_command(post_command, ip, port),
+        KenkuCommand::KenkuGet(get_command) => process_get_command(get_command, base_url.as_str()),
+        KenkuCommand::KenkuPut(put_command) => process_put_command(put_command, base_url.as_str()),
+        KenkuCommand::KenkuPost(post_command) => process_post_command(post_command, base_url.as_str()),
     }
 }
 
@@ -572,7 +621,7 @@ mod tests {
     #[test]
     fn get_soundboard_link_creation() {
         let command = KenkuCommand::KenkuGet(KenkuGetCommand::Soundboard);
-        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), DEFAULT_PORT);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
         let expected_url = format!("http://{}:{}/v1/soundboard", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
         assert_eq!(url, expected_url);
     }
@@ -580,7 +629,7 @@ mod tests {
     #[test]
     fn get_playlist_link_creation() {
         let command = KenkuCommand::KenkuGet(KenkuGetCommand::Playlist);
-        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), DEFAULT_PORT);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
         let expected_url = format!("http://{}:{}/v1/playlist", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
         assert_eq!(url, expected_url);
     }
@@ -588,7 +637,7 @@ mod tests {
     #[test]
     fn get_soundboard_playback_link_creation() {
         let command = KenkuCommand::KenkuGet(KenkuGetCommand::SoundboardPlayback);
-        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), DEFAULT_PORT);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
         let expected_url = format!("http://{}:{}/v1/soundboard/playback", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
         assert_eq!(url, expected_url);
     }
@@ -596,7 +645,7 @@ mod tests {
     #[test]
     fn get_playlist_playback_link_creation() {
         let command = KenkuCommand::KenkuGet(KenkuGetCommand::PlaylistPlayback);
-        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), DEFAULT_PORT);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
         let expected_url = format!("http://{}:{}/v1/playlist/playback", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
         assert_eq!(url, expected_url);
     }
@@ -604,7 +653,7 @@ mod tests {
     #[test]
     fn put_playlist_play_link_creation() {
         let command = KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlay);
-        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), DEFAULT_PORT);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
         let expected_url = format!("http://{}:{}/v1/playlist/play", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
         assert_eq!(url, expected_url);
     }
@@ -690,6 +739,4 @@ mod tests {
     }
 
 }
-
-
 
