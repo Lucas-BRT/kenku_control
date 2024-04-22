@@ -563,3 +563,46 @@ impl Controller {
         Ok(response)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{process_url, KenkuCommand, KenkuGetCommand};
+    const DEFAULT_IP_ADDRESS: &str = "127.0.0.1";
+    const DEFAULT_PORT: u16 = 3333;
+
+    #[test]
+    fn get_soundboard_link_creation() {
+        let get_soundboard_command = KenkuCommand::KenkuGet(KenkuGetCommand::Soundboard);
+        let get_soundbaord_url = process_url(&get_soundboard_command, &DEFAULT_IP_ADDRESS.to_string(), &DEFAULT_PORT.to_string());
+        let get_soundboard_expected_url = format!("http://{}:{}/v1/soundboard", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(get_soundbaord_url, get_soundboard_expected_url);
+    }
+
+    #[test]
+    fn get_playlist_link_creation() {
+        let get_soundboard_command = KenkuCommand::KenkuGet(KenkuGetCommand::Playlist);
+        let get_playlist_url = process_url(&get_soundboard_command, &DEFAULT_IP_ADDRESS.to_string(), &DEFAULT_PORT.to_string());
+        let get_playlist_expected_url = format!("http://{}:{}/v1/playlist", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(get_playlist_url, get_playlist_expected_url);
+    }
+
+    #[test]
+    fn get_soundboard_playback_link_creation() {
+        let get_soundboard_playback_command = KenkuCommand::KenkuGet(KenkuGetCommand::SoundboardPlayback);
+        let get_soundboard_playback_url = process_url(&get_soundboard_playback_command, &DEFAULT_IP_ADDRESS.to_string(), &DEFAULT_PORT.to_string());
+        let get_soundboard_playback_expected_url = format!("http://{}:{}/v1/soundboard/playback", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(get_soundboard_playback_url, get_soundboard_playback_expected_url);
+    }
+
+    #[test]
+    fn get_playlist_playback_link_creation() {
+        let get_soundboard_playback_command = KenkuCommand::KenkuGet(KenkuGetCommand::PlaylistPlayback);
+        let get_playlist_playback_url = process_url(&get_soundboard_playback_command, &DEFAULT_IP_ADDRESS.to_string(), &DEFAULT_PORT.to_string());
+        let get_playlist_playback_expected_url = format!("http://{}:{}/v1/playlist/playback", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(get_playlist_playback_url, get_playlist_playback_expected_url);
+    }
+
+}
+
+
+
