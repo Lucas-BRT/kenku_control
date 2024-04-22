@@ -65,6 +65,43 @@ pub async fn check_kenku_server_state(ip: &str, port: u16, delay_in_milisseconds
     }
 }
 
+fn format_base_url(ip: &str, port: u16) -> String {
+    format!("http://{}:{}/v1", ip, port)
+}
+
+fn process_get_command(command: KenkuGetCommand, ip: &str, port: u16) -> String {
+    let base_url = format_base_url(ip, port);
+    match command {
+        KenkuGetCommand::Soundboard => format!("{}/soundboard", base_url),
+        KenkuGetCommand::SoundboardPlayback => format!("{}/soundboard/playback", base_url),
+        KenkuGetCommand::Playlist => format!("{}/playlist", base_url),
+        KenkuGetCommand::PlaylistPlayback => format!("{}/playlist/playback", base_url)
+    }
+}
+
+fn process_put_command(command: &KenkuPutCommand, ip: &str, port: u16) -> String {
+    let base_url = format_base_url(ip, port);
+    match command {
+        KenkuPutCommand::PlaylistPlay => format!("{}/playlist/play", base_url),
+        KenkuPutCommand::PlaylistPlaybackMute => format!("{}/playlist/playback/mute", base_url),
+        KenkuPutCommand::PlaylistPlaybackPause => format!("{}/playlist/playback/pause", base_url),
+        KenkuPutCommand::PlaylistPlaybackPlay => format!("{}/playlist/playback/play", base_url),
+        KenkuPutCommand::PlaylistPlaybackRepeat => format!("{}/playlist/playback/repeat", base_url),
+        KenkuPutCommand::PlaylistPlaybackShuffle => format!("{}/playlist/playback/shuffle", base_url),
+        KenkuPutCommand::PlaylistPlaybackVolume => format!("{}/playlist/playback/volume", base_url),
+        KenkuPutCommand::SoundboardPlay => format!("{}/soundboard/play", base_url),
+        KenkuPutCommand::SoundboardStop => format!("{}/soundboard/stop", base_url),
+    }
+}
+
+fn process_post_command(command: &KenkuPostCommand, ip: &str, port: u16) -> String {
+    let base_url = format_base_url(ip, port);
+    match command {
+        KenkuPostCommand::PlaylistPlaybackNext => format!("{}/playlist/playback/next", base_url),
+        KenkuPostCommand::PlaylistPlaybackPrevious => format!("{}/playlist/playback/previous", base_url),
+    }
+}
+
 /// Constructs a URL for a given command, IP address, and port.
 ///
 /// This function takes a `KenkuGetCommand`, an IP address, and a port, and returns a URL that can be used to make a GET request to the soundboard or playlist API.
@@ -566,40 +603,128 @@ impl Controller {
 
 #[cfg(test)]
 mod tests {
-    use super::{process_url, KenkuCommand, KenkuGetCommand};
+    use super::{process_url, KenkuCommand, KenkuGetCommand, KenkuPutCommand, KenkuPostCommand};
     const DEFAULT_IP_ADDRESS: &str = "127.0.0.1";
     const DEFAULT_PORT: u16 = 3333;
 
     #[test]
     fn get_soundboard_link_creation() {
-        let get_soundboard_command = KenkuCommand::KenkuGet(KenkuGetCommand::Soundboard);
-        let get_soundbaord_url = process_url(&get_soundboard_command, &DEFAULT_IP_ADDRESS.to_string(), &DEFAULT_PORT.to_string());
-        let get_soundboard_expected_url = format!("http://{}:{}/v1/soundboard", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
-        assert_eq!(get_soundbaord_url, get_soundboard_expected_url);
+        let command = KenkuCommand::KenkuGet(KenkuGetCommand::Soundboard);
+        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), &DEFAULT_PORT.to_string());
+        let expected_url = format!("http://{}:{}/v1/soundboard", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
     }
 
     #[test]
     fn get_playlist_link_creation() {
-        let get_soundboard_command = KenkuCommand::KenkuGet(KenkuGetCommand::Playlist);
-        let get_playlist_url = process_url(&get_soundboard_command, &DEFAULT_IP_ADDRESS.to_string(), &DEFAULT_PORT.to_string());
-        let get_playlist_expected_url = format!("http://{}:{}/v1/playlist", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
-        assert_eq!(get_playlist_url, get_playlist_expected_url);
+        let command = KenkuCommand::KenkuGet(KenkuGetCommand::Playlist);
+        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), &DEFAULT_PORT.to_string());
+        let expected_url = format!("http://{}:{}/v1/playlist", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
     }
 
     #[test]
     fn get_soundboard_playback_link_creation() {
-        let get_soundboard_playback_command = KenkuCommand::KenkuGet(KenkuGetCommand::SoundboardPlayback);
-        let get_soundboard_playback_url = process_url(&get_soundboard_playback_command, &DEFAULT_IP_ADDRESS.to_string(), &DEFAULT_PORT.to_string());
-        let get_soundboard_playback_expected_url = format!("http://{}:{}/v1/soundboard/playback", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
-        assert_eq!(get_soundboard_playback_url, get_soundboard_playback_expected_url);
+        let command = KenkuCommand::KenkuGet(KenkuGetCommand::SoundboardPlayback);
+        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), &DEFAULT_PORT.to_string());
+        let expected_url = format!("http://{}:{}/v1/soundboard/playback", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
     }
 
     #[test]
     fn get_playlist_playback_link_creation() {
-        let get_soundboard_playback_command = KenkuCommand::KenkuGet(KenkuGetCommand::PlaylistPlayback);
-        let get_playlist_playback_url = process_url(&get_soundboard_playback_command, &DEFAULT_IP_ADDRESS.to_string(), &DEFAULT_PORT.to_string());
-        let get_playlist_playback_expected_url = format!("http://{}:{}/v1/playlist/playback", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
-        assert_eq!(get_playlist_playback_url, get_playlist_playback_expected_url);
+        let command = KenkuCommand::KenkuGet(KenkuGetCommand::PlaylistPlayback);
+        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), &DEFAULT_PORT.to_string());
+        let expected_url = format!("http://{}:{}/v1/playlist/playback", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn put_playlist_play_link_creation() {
+        let command = KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlay);
+        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), &DEFAULT_PORT.to_string());
+        let expected_url = format!("http://{}:{}/v1/playlist/play", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn put_playlist_playback_mute_link_creation() {
+        let command = KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackMute);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist/playback/mute", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn put_playlist_playback_pause_link_creation() {
+        let command = KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPause);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist/playback/pause", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn put_playlist_playback_play_link_creation() {
+        let command = KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPlay);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist/playback/play", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn put_playlist_playback_repeat_link_creation() {
+        let command = KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackRepeat);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist/playback/repeat", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn put_playlist_playback_shuffle_link_creation() {
+        let command = KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackShuffle);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist/playback/shuffle", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn put_playlist_playback_volume_link_creation() {
+        let command = KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackVolume);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist/playback/volume", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn put_soundboard_play_link_creation() {
+        let command = KenkuCommand::KenkuPut(KenkuPutCommand::SoundboardPlay);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/soundboard/play", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn put_soundboard_stop_link_creation() {
+        let command = KenkuCommand::KenkuPut(KenkuPutCommand::SoundboardStop);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/soundboard/stop", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn post_playlist_playback_next_link_creation() {
+        let command = KenkuCommand::KenkuPost(KenkuPostCommand::PlaylistPlaybackNext);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist/playback/next", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn post_playlist_playback_previous_link_creation() {
+        let command = KenkuCommand::KenkuPost(KenkuPostCommand::PlaylistPlaybackPrevious);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist/playback/previous", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
     }
 
 }
