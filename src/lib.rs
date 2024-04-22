@@ -69,7 +69,7 @@ fn format_base_url(ip: &str, port: u16) -> String {
     format!("http://{}:{}/v1", ip, port)
 }
 
-fn process_get_command(command: KenkuGetCommand, ip: &str, port: u16) -> String {
+fn process_get_command(command: &KenkuGetCommand, ip: &str, port: u16) -> String {
     let base_url = format_base_url(ip, port);
     match command {
         KenkuGetCommand::Soundboard => format!("{}/soundboard", base_url),
@@ -115,49 +115,11 @@ fn process_post_command(command: &KenkuPostCommand, ip: &str, port: u16) -> Stri
 /// # Returns
 ///
 /// This function returns a `String` that represents the constructed URL.
-fn process_url(command: &KenkuCommand, ip: &String, port: &String) -> String {
+fn process_url(command: &KenkuCommand, ip: &str, port: u16) -> String {
     match command {
-        KenkuCommand::KenkuGet(get_command) => match get_command {
-            KenkuGetCommand::Soundboard => format!("http://{}:{}/v1/soundboard", ip, port),
-            KenkuGetCommand::SoundboardPlayback => {
-                format!("http://{}:{}/v1/soundboard/playback", ip, port)
-            }
-            KenkuGetCommand::Playlist => format!("http://{}:{}/v1/playlist", ip, port),
-            KenkuGetCommand::PlaylistPlayback => {
-                format!("http://{}:{}/v1/playlist/playback", ip, port)
-            }
-        },
-        KenkuCommand::KenkuPut(put_command) => match put_command {
-            KenkuPutCommand::PlaylistPlay => format!("http://{}:{}/v1/playlist/play", ip, port),
-            KenkuPutCommand::PlaylistPlaybackMute => {
-                format!("http://{}:{}/v1/playlist/playback/mute", ip, port)
-            }
-            KenkuPutCommand::PlaylistPlaybackPause => {
-                format!("http://{}:{}/v1/playlist/playback/pause", ip, port)
-            }
-            KenkuPutCommand::PlaylistPlaybackPlay => {
-                format!("http://{}:{}/v1/playlist/playback/play", ip, port)
-            }
-            KenkuPutCommand::PlaylistPlaybackRepeat => {
-                format!("http://{}:{}/v1/playlist/playback/repeat", ip, port)
-            }
-            KenkuPutCommand::PlaylistPlaybackShuffle => {
-                format!("http://{}:{}/v1/playlist/playback/shuffle", ip, port)
-            }
-            KenkuPutCommand::PlaylistPlaybackVolume => {
-                format!("http://{}:{}/v1/playlist/playback/volume", ip, port)
-            }
-            KenkuPutCommand::SoundboardPlay => format!("http://{}:{}/v1/soundboard/play", ip, port),
-            KenkuPutCommand::SoundboardStop => format!("http://{}:{}/v1/soundboard/stop", ip, port),
-        },
-        KenkuCommand::KenkuPost(post_command) => match post_command {
-            KenkuPostCommand::PlaylistPlaybackNext => {
-                format!("http://{}:{}/v1/playlist/playback/next", ip, port)
-            }
-            KenkuPostCommand::PlaylistPlaybackPrevious => {
-                format!("http://{}:{}/v1/playlist/playback/previous", ip, port)
-            }
-        },
+        KenkuCommand::KenkuGet(get_command) => process_get_command(get_command, ip, port),
+        KenkuCommand::KenkuPut(put_command) => process_put_command(put_command, ip, port),
+        KenkuCommand::KenkuPost(post_command) => process_post_command(post_command, ip, port),
     }
 }
 
