@@ -138,3 +138,217 @@ impl Track {
     }
 }
 
+#[allow(unused)]
+mod playback {
+
+    use super::{Controller, KenkuCommand, KenkuPutCommand, KenkuPostCommand, StatusCode, process_url, json, playlist};
+
+    /// Sends a request to the Kenku server to play the current track in the playlist.
+    ///
+    /// This function constructs a URL for the 'PlaylistPlaybackPlay' command, sends a PUT request to that URL, and returns the HTTP status code of the response.
+    ///
+    /// # Arguments
+    ///
+    /// * `controller` - A reference to a `Controller` struct, which includes a HTTP client, the IP address and port of the server, and the current state of the server.
+    ///
+    /// # Returns
+    ///
+    /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
+    pub async fn playback_play(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
+        let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPlay);
+        let url = process_url(command, controller.ip, controller.port);
+
+        let response = controller.client.put(url).send().await?.status();
+
+        Ok(response)
+    }
+
+    /// Sends a request to the Kenku server to pause the current track in the playlist.
+    ///
+    /// This function constructs a URL for the 'PlaylistPlaybackPause' command, sends a PUT request to that URL, and returns the HTTP status code of the response.
+    ///
+    /// # Arguments
+    ///
+    /// * `controller` - A reference to a `Controller` struct, which includes a HTTP client, the IP address and port of the server, and the current state of the server.
+    ///
+    /// # Returns
+    ///
+    /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
+    pub async fn playback_pause(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
+        let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPause);
+        let url = process_url(command, controller.ip, controller.port);
+
+        let response = controller.client.put(url).send().await?.status();
+
+        Ok(response)
+    }
+
+    /// Sends a request to the Kenku server to play the next track in the playlist.
+    ///
+    /// This function constructs a URL for the 'PlaylistPlaybackNext' command, sends a POST request to that URL, and returns the HTTP status code of the response.
+    ///
+    /// # Arguments
+    ///
+    /// * `controller` - A reference to a `Controller` struct, which includes a HTTP client, the IP address and port of the server, and the current state of the server.
+    ///
+    /// # Returns
+    ///
+    /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
+    pub async fn playback_next(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
+        let command = &KenkuCommand::KenkuPost(KenkuPostCommand::PlaylistPlaybackNext);
+        let url = process_url(command, controller.ip, controller.port);
+        println!("{url}");
+        let response = controller.client.post(url).send().await?.status();
+
+        Ok(response)
+    }
+
+    /// Sends a PUT request to the Kenku server to mute or unmute the playlist.
+    ///
+    /// This function takes a reference to a `Controller` and a boolean, constructs a URL and a JSON payload, and sends a PUT request to the Kenku server. The server's response status is returned.
+    ///
+    /// # Arguments
+    ///
+    /// * `controller` - A reference to a `Controller` struct, which includes a HTTP client, the IP address and port of the server, and the current state of the server.
+    /// * `mute` - A boolean that specifies whether to mute (`true`) or unmute (`false`) the playlist.
+    ///
+    /// # Returns
+    ///
+    /// This function returns a `Result` that contains a `StatusCode`, if the request was sent successfully, or a `reqwest::Error`, if the request failed.
+    pub async fn playback_mute(
+        controller: &Controller,
+        mute: bool,
+    ) -> Result<StatusCode, reqwest::Error> {
+        let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackMute);
+        let url = process_url(command, controller.ip, controller.port);
+        let json = json!({"mute": mute});
+
+        let response = controller
+            .client
+            .put(url)
+            .header("content-type", "application/json")
+            .json(&json)
+            .send()
+            .await?
+            .status();
+
+        Ok(response)
+    }
+
+    /// Changes the volume of the playlist.
+    ///
+    /// This function takes a `Controller` and a floating point number representing the desired volume level.
+    /// It sends a PUT request to the server to change the volume of the playlist.
+    ///
+    /// # Arguments
+    ///
+    /// * `controller` - A reference to a `Controller` struct, which includes the HTTP client, the IP address and port of the server, and the current state of the server.
+    /// * `volume` - A floating point number representing the desired volume level. The value should be between 0.0 and 1.0, where 0.0 is mute and 1.0 is the maximum volume.
+    ///
+    /// # Returns
+    ///
+    /// This function returns a `Result` with a `StatusCode`. If the PUT request is successful, it returns `Ok(StatusCode)`. If the PUT request fails, it returns `Err(reqwest::Error)`.
+    pub async fn playback_volume(
+        controller: &Controller,
+        volume: f64,
+    ) -> Result<StatusCode, reqwest::Error> {
+        // Define the command as a volume command
+        let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackVolume);
+
+        // Construct the URL for the PUT request
+        let url = process_url(command, controller.ip, controller.port);
+
+        // Create the JSON payload for the request
+        let json = json!({"volume": volume});
+
+        // Send the PUT request to the server and get the response status
+        let response = controller
+            .client
+            .put(url)
+            .header("content-type", "application/json")
+            .json(&json)
+            .send()
+            .await?
+            .status();
+
+        // Return the response status
+        Ok(response)
+    }
+
+    /// Changes the shuffle state of the playlist.
+    ///
+    /// This function takes a `Controller` and a boolean value representing the desired shuffle state.
+    /// It sends a PUT request to the server to change the shuffle state of the playlist.
+    ///
+    /// # Arguments
+    ///
+    /// * `controller` - A reference to a `Controller` struct, which includes the HTTP client, the IP address and port of the server, and the current state of the server.
+    /// * `shuffle` - A boolean value representing the desired shuffle state. If `true`, the tracks in the playlist will be played in a random order. If `false`, the tracks will be played in the order they appear in the playlist.
+    ///
+    /// # Returns
+    ///
+    /// This function returns a `Result` with a `StatusCode`. If the PUT request is successful, it returns `Ok(StatusCode)`. If the PUT request fails, it returns `Err(reqwest::Error)`.
+    pub async fn playback_shuffle(
+        controller: &Controller,
+        shuffle: bool,
+    ) -> Result<StatusCode, reqwest::Error> {
+        // Define the command as a shuffle command
+        let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackShuffle);
+
+        // Construct the URL for the PUT request
+        let url = process_url(command, controller.ip, controller.port);
+
+        // Create the JSON payload for the request
+        let json = json!({"shuffle": shuffle});
+
+        // Send the PUT request to the server and get the response status
+        let response = controller
+            .client
+            .put(url)
+            .header("content-type", "application/json")
+            .json(&json)
+            .send()
+            .await?
+            .status();
+
+        // Return the response status
+        Ok(response)
+    }
+
+    /// Sends a PUT request to the Kenku server to set the repeat mode of the playlist.
+    ///
+    /// This function takes a reference to a `Controller` and a `Repeat` enum, constructs a URL and a JSON payload, and sends a PUT request to the Kenku server. The server's response status is returned.
+    ///
+    /// # Arguments
+    ///
+    /// * `controller` - A reference to a `Controller` struct, which includes a HTTP client, the IP address and port of the server, and the current state of the server.
+    /// * `repeat` - A `Repeat` enum, which specifies the repeat mode to set. It can be `Repeat::Track`, `Repeat::Playlist`, or `Repeat::Off`.
+    ///
+    /// # Returns
+    ///
+    /// This function returns a `Result` that contains a `StatusCode`, if the request was sent successfully, or a `reqwest::Error`, if the request failed.
+    pub async fn playback_repeat(
+        controller: &Controller,
+        repeat: playlist::Repeat,
+    ) -> Result<StatusCode, reqwest::Error> {
+        let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackRepeat);
+        let url = process_url(command, controller.ip, controller.port);
+        let json = json!({"repeat": repeat});
+
+        println!("{url}");
+
+        println!("{json}");
+
+        let response = controller
+            .client
+            .put(url)
+            .header("content-type", "application/json")
+            .json(&json)
+            .send()
+            .await?
+            .status();
+
+        Ok(response)
+    }
+}
+
