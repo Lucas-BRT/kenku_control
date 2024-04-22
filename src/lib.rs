@@ -228,7 +228,7 @@ pub enum KenkuResponse {
 /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
 pub async fn playback_play(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
     let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPlay);
-    let url = process_url(command, &controller.ip, &controller.port);
+    let url = process_url(command, controller.ip, controller.port);
 
     let response = controller.client.put(url).send().await?.status();
 
@@ -248,7 +248,7 @@ pub async fn playback_play(controller: &Controller) -> Result<StatusCode, reqwes
 /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
 pub async fn playback_pause(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
     let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPause);
-    let url = process_url(command, &controller.ip, &controller.port);
+    let url = process_url(command, controller.ip, controller.port);
 
     let response = controller.client.put(url).send().await?.status();
 
@@ -268,7 +268,7 @@ pub async fn playback_pause(controller: &Controller) -> Result<StatusCode, reqwe
 /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
 pub async fn playback_next(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
     let command = &KenkuCommand::KenkuPost(KenkuPostCommand::PlaylistPlaybackNext);
-    let url = process_url(command, &controller.ip, &controller.port);
+    let url = process_url(command, controller.ip, controller.port);
     println!("{url}");
     let response = controller.client.post(url).send().await?.status();
 
@@ -292,7 +292,7 @@ pub async fn playback_mute(
     mute: bool,
 ) -> Result<StatusCode, reqwest::Error> {
     let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackMute);
-    let url = process_url(command, &controller.ip, &controller.port);
+    let url = process_url(command, controller.ip, controller.port);
     let json = json!({"mute": mute});
 
     let response = controller
@@ -328,7 +328,7 @@ pub async fn playback_volume(
     let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackVolume);
 
     // Construct the URL for the PUT request
-    let url = process_url(command, &controller.ip, &controller.port);
+    let url = process_url(command, controller.ip, controller.port);
 
     // Create the JSON payload for the request
     let json = json!({"volume": volume});
@@ -368,7 +368,7 @@ pub async fn playback_shuffle(
     let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackShuffle);
 
     // Construct the URL for the PUT request
-    let url = process_url(command, &controller.ip, &controller.port);
+    let url = process_url(command, controller.ip, controller.port);
 
     // Create the JSON payload for the request
     let json = json!({"shuffle": shuffle});
@@ -404,7 +404,7 @@ pub async fn playback_repeat(
     repeat: playlist::Repeat,
 ) -> Result<StatusCode, reqwest::Error> {
     let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackRepeat);
-    let url = process_url(command, &controller.ip, &controller.port);
+    let url = process_url(command, controller.ip, controller.port);
     let json = json!({"repeat": repeat});
 
     println!("{url}");
@@ -436,8 +436,8 @@ pub async fn playback_repeat(
 #[derive(Debug)]
 pub struct Controller {
     pub client: Client,
-    pub ip: String,
-    pub port: String,
+    pub ip: &'static str,
+    pub port: u16,
     pub kenku_remote_state: KenkuState,
 }
 
@@ -457,7 +457,7 @@ impl Controller {
     /// # Returns
     ///
     /// This function returns a new `Controller` with the specified IP address, port, and an initial server state of `KenkuState::Offline`.
-    pub fn new(ip: String, port: String) -> Controller {
+    pub fn new(ip: &'static str, port: u16) -> Controller {
         let client = build_client(20);
 
         Controller {
@@ -478,8 +478,8 @@ impl Controller {
     pub async fn get_soundboard(&self) -> Result<soundboard::SoundboardGetResponse , reqwest::Error> {
         let url = process_url(
             &KenkuCommand::KenkuGet(KenkuGetCommand::Soundboard),
-            &self.ip,
-            &self.port,
+            self.ip,
+            self.port,
         );
         let response = self
             .client
@@ -503,8 +503,8 @@ impl Controller {
     ) -> Result<soundboard::SoundboardPlaybackResponse, reqwest::Error> {
         let url = process_url(
             &KenkuCommand::KenkuGet(KenkuGetCommand::SoundboardPlayback),
-            &self.ip,
-            &self.port,
+            self.ip,
+            self.port,
         );
         let response = self
             .client
@@ -526,8 +526,8 @@ impl Controller {
     pub async fn get_playlist(&self) -> Result<playlist::PlaylistGetResponse, reqwest::Error> {
         let url = process_url(
             &KenkuCommand::KenkuGet(KenkuGetCommand::Playlist),
-            &self.ip,
-            &self.port,
+            self.ip,
+            self.port,
         );
         let response = self
             .client
@@ -549,8 +549,8 @@ impl Controller {
     pub async fn get_playlist_playback(&self) -> Result<playlist::PlaylistPlaybackResponse, reqwest::Error> {
         let url = process_url(
             &KenkuCommand::KenkuGet(KenkuGetCommand::PlaylistPlayback),
-            &self.ip,
-            &self.port,
+            self.ip,
+            self.port,
         );
         let response = self
             .client
@@ -572,7 +572,7 @@ mod tests {
     #[test]
     fn get_soundboard_link_creation() {
         let command = KenkuCommand::KenkuGet(KenkuGetCommand::Soundboard);
-        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), &DEFAULT_PORT.to_string());
+        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), DEFAULT_PORT);
         let expected_url = format!("http://{}:{}/v1/soundboard", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
         assert_eq!(url, expected_url);
     }
@@ -580,7 +580,7 @@ mod tests {
     #[test]
     fn get_playlist_link_creation() {
         let command = KenkuCommand::KenkuGet(KenkuGetCommand::Playlist);
-        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), &DEFAULT_PORT.to_string());
+        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), DEFAULT_PORT);
         let expected_url = format!("http://{}:{}/v1/playlist", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
         assert_eq!(url, expected_url);
     }
@@ -588,7 +588,7 @@ mod tests {
     #[test]
     fn get_soundboard_playback_link_creation() {
         let command = KenkuCommand::KenkuGet(KenkuGetCommand::SoundboardPlayback);
-        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), &DEFAULT_PORT.to_string());
+        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), DEFAULT_PORT);
         let expected_url = format!("http://{}:{}/v1/soundboard/playback", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
         assert_eq!(url, expected_url);
     }
@@ -596,7 +596,7 @@ mod tests {
     #[test]
     fn get_playlist_playback_link_creation() {
         let command = KenkuCommand::KenkuGet(KenkuGetCommand::PlaylistPlayback);
-        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), &DEFAULT_PORT.to_string());
+        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), DEFAULT_PORT);
         let expected_url = format!("http://{}:{}/v1/playlist/playback", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
         assert_eq!(url, expected_url);
     }
@@ -604,7 +604,7 @@ mod tests {
     #[test]
     fn put_playlist_play_link_creation() {
         let command = KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlay);
-        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), &DEFAULT_PORT.to_string());
+        let url = process_url(&command, &DEFAULT_IP_ADDRESS.to_string(), DEFAULT_PORT);
         let expected_url = format!("http://{}:{}/v1/playlist/play", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
         assert_eq!(url, expected_url);
     }

@@ -122,7 +122,7 @@ impl Track {
     pub async fn play(&self, controller: &Controller) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlay);
 
-        let url = process_url(command, &controller.ip, &controller.port);
+        let url = process_url(command, controller.ip, controller.port);
         let json = json!({"id": self.id});
 
         let response = controller

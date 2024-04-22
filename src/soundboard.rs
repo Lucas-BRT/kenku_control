@@ -96,7 +96,7 @@ impl Sounds {
     pub async fn play(&self, controller: &Controller) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::SoundboardPlay);
 
-        let url = process_url(command, &controller.ip, &controller.port);
+        let url = process_url(command, controller.ip, controller.port);
         let json = json!({"id": self.id});
 
         let response = controller
@@ -126,7 +126,7 @@ impl Sounds {
     pub async fn stop(&self, controller: &Controller) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::SoundboardStop);
 
-        let url = process_url(command, &controller.ip, &controller.port);
+        let url = process_url(command, controller.ip, controller.port);
         let json = json!({"id": self.id});
 
         let response = controller
