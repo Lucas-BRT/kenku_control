@@ -8,3 +8,12 @@ async fn kenku_remote_is_online() {
     let server_state = check_kenku_server_state(DEFAULT_IP_ADDRESS, DEFAULT_PORT, 10).await;
     assert_eq!(server_state, KenkuState::Online);
 }
+
+#[tokio::test]
+async fn get_playlists() {
+    let controller = Controller::new(DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+    let playlist = controller.get_playlist().await;
+    assert_eq!(playlist.is_ok(), true);
+}
+
+
