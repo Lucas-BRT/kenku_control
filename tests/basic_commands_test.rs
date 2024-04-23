@@ -16,4 +16,9 @@ async fn get_playlists() {
     assert_eq!(playlist.is_ok(), true);
 }
 
-
+#[tokio::test]
+async fn get_soundboards() {
+    let controller = Controller::new(DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+    let soundboard = controller.get_soundboard().await;
+    assert_eq!(soundboard.is_ok(), true);
+}
