@@ -197,7 +197,6 @@ pub mod playback {
     pub async fn playback_next(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPost(KenkuPostCommand::PlaylistPlaybackNext);
         let url = process_url(command, controller.ip, controller.port);
-        println!("{url}");
         let response = controller.client.post(url).send().await?.status();
 
         Ok(response)
@@ -334,10 +333,6 @@ pub mod playback {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackRepeat);
         let url = process_url(command, controller.ip, controller.port);
         let json = json!({"repeat": repeat});
-
-        println!("{url}");
-
-        println!("{json}");
 
         let response = controller
             .client
