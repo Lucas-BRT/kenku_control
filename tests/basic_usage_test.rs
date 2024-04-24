@@ -1,4 +1,4 @@
-use kenku_control::*;
+use kenku_control::{*, playlist::playback};
 use rand::Rng;
 
 const DEFAULT_IP_ADDRESS: &str = "127.0.0.1";
@@ -20,4 +20,12 @@ async fn play_a_randon_track() {
         },
         None => ()
     }
+}
+    
+#[tokio::test]
+async fn pause_playlist_playback() {
+    let controller = Controller::new(DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+    let command = playback::playback_pause(&controller).await.unwrap();
+
+    assert_eq!(command.is_success(), true);
 }
