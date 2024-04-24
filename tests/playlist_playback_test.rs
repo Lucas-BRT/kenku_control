@@ -18,3 +18,12 @@ async fn play_playlist_playback() {
 
     assert_eq!(command.is_success(), true);
 }
+
+#[tokio::test]
+async fn next_playlist_playback() {
+    let controller = Controller::new(DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+    let command = playback::playback_next(&controller).await.unwrap();
+
+    assert_eq!(command.is_success(), true);
+}
+
