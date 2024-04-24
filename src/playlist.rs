@@ -139,7 +139,7 @@ impl Track {
 }
 
 #[allow(unused)]
-mod playback {
+pub mod playback {
 
     use super::{Controller, KenkuCommand, KenkuPutCommand, KenkuPostCommand, StatusCode, process_url, json, playlist};
 
