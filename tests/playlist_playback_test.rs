@@ -35,3 +35,12 @@ async fn previous_playlist_playback() {
     assert_eq!(command.is_success(), true);
 }
 
+#[tokio::test]
+async fn mute_playlist_playback() {
+    let controller = Controller::new(DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+    let is_muted = controller.get_playlist_playback().await.unwrap().muted;
+    let command = playback::playback_mute(&controller, !is_muted).await.unwrap();
+
+    assert_eq!(command.is_success(), true);
+}
+
