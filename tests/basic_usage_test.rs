@@ -29,3 +29,11 @@ async fn pause_playlist_playback() {
 
     assert_eq!(command.is_success(), true);
 }
+
+#[tokio::test]
+async fn play_playlist_playback() {
+    let controller = Controller::new(DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+    let command = playback::playback_play(&controller).await.unwrap();
+
+    assert_eq!(command.is_success(), true);
+}
