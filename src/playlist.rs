@@ -121,7 +121,6 @@ impl Track {
     /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
     pub async fn play(&self, controller: &Controller) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlay);
-
         let url = process_url(command, controller.ip, controller.port);
         let json = json!({"id": self.id});
 
@@ -157,7 +156,6 @@ pub mod playback {
     pub async fn playback_play(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPlay);
         let url = process_url(command, controller.ip, controller.port);
-
         let response = controller.client.put(url).send().await?.status();
 
         Ok(response)
@@ -177,7 +175,6 @@ pub mod playback {
     pub async fn playback_pause(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPause);
         let url = process_url(command, controller.ip, controller.port);
-
         let response = controller.client.put(url).send().await?.status();
 
         Ok(response)
@@ -251,16 +248,10 @@ pub mod playback {
         controller: &Controller,
         volume: f64,
     ) -> Result<StatusCode, reqwest::Error> {
-        // Define the command as a volume command
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackVolume);
-
-        // Construct the URL for the PUT request
         let url = process_url(command, controller.ip, controller.port);
-
-        // Create the JSON payload for the request
         let json = json!({"volume": volume});
 
-        // Send the PUT request to the server and get the response status
         let response = controller
             .client
             .put(url)
@@ -270,7 +261,6 @@ pub mod playback {
             .await?
             .status();
 
-        // Return the response status
         Ok(response)
     }
 
@@ -291,16 +281,10 @@ pub mod playback {
         controller: &Controller,
         shuffle: bool,
     ) -> Result<StatusCode, reqwest::Error> {
-        // Define the command as a shuffle command
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackShuffle);
-
-        // Construct the URL for the PUT request
         let url = process_url(command, controller.ip, controller.port);
-
-        // Create the JSON payload for the request
         let json = json!({"shuffle": shuffle});
 
-        // Send the PUT request to the server and get the response status
         let response = controller
             .client
             .put(url)
@@ -310,7 +294,6 @@ pub mod playback {
             .await?
             .status();
 
-        // Return the response status
         Ok(response)
     }
 
