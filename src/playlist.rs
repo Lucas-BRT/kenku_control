@@ -199,6 +199,25 @@ pub mod playback {
         Ok(response)
     }
 
+    /// Sends a request to the Kenku server to play the previous track in the playlist.
+    ///
+    /// This function constructs a URL for the 'PlaylistPlaybackPrevious' command, sends a POST request to that URL, and returns the HTTP status code of the response.
+    ///
+    /// # Arguments
+    ///
+    /// * `controller` - A reference to a `Controller` struct, which includes a HTTP client, the IP address and port of the server, and the current state of the server.
+    ///
+    /// # Returns
+    ///
+    /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
+    pub async fn playback_previous(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
+        let command = &KenkuCommand::KenkuPost(KenkuPostCommand::PlaylistPlaybackPrevious);
+        let url = process_url(command, controller.ip, controller.port);
+        let response = controller.client.post(url).send().await?.status();
+
+        Ok(response)
+    }
+
     /// Sends a PUT request to the Kenku server to mute or unmute the playlist.
     ///
     /// This function takes a reference to a `Controller` and a boolean, constructs a URL and a JSON payload, and sends a PUT request to the Kenku server. The server's response status is returned.
