@@ -1,4 +1,4 @@
-use kenku_control::{*, playlist::playback};
+use kenku_control::{playlist::{playback, Track}, *};
 
 const DEFAULT_IP_ADDRESS: &str = "127.0.0.1";
 const DEFAULT_PORT: u16 = 3333;
@@ -40,6 +40,20 @@ async fn mute_playlist_playback() {
     let controller = Controller::new(DEFAULT_IP_ADDRESS, DEFAULT_PORT);
     let is_muted = controller.get_playlist_playback().await.unwrap().muted;
     let command = playback::playback_mute(&controller, !is_muted).await.unwrap();
+
+    assert_eq!(command.is_success(), true);
+}
+
+#[tokio::test]
+async fn repeat_playlist_playback() {
+    let controller = Controller::new(DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+    let repeat_state = controller.get_playlist_playback().await.unwrap().repeat;
+    let repeat = match repeat_state {
+        playlist::Repeat::Track => playlist::Repeat::Playlist,
+        playlist::Repeat::Playlist => playlist::Repeat::Off,
+        playlist::Repeat::Off => playlist::Repeat::Track
+    };
+    let command = playback::playback_repeat(&controller, repeat).await.unwrap();
 
     assert_eq!(command.is_success(), true);
 }
