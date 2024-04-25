@@ -58,3 +58,11 @@ async fn repeat_playlist_playback() {
     assert_eq!(command.is_success(), true);
 }
 
+#[tokio::test]
+async fn shuffle_playlist_playback() {
+    let controller = Controller::new(DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+    let is_shuffled = controller.get_playlist_playback().await.unwrap().shuffle;
+    let command = playback::playback_shuffle(&controller, !is_shuffled).await.unwrap();
+
+    assert_eq!(command.is_success(), true);
+}
