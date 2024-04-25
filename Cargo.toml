@@ -1,6 +1,6 @@
 [package]
 name = "kenku_control"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Lucas-BRT"]
 description = "A library for manage Kenku FM using Kenku Remote"
@@ -15,4 +15,7 @@ reqwest = { version = "0.11", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
+[dev-dependencies]
+tokio = { version = "1.37.0", features = ["full"]}
+rand = "0.8.5"
 

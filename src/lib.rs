@@ -1,356 +1,18 @@
 //! # Kenku Control
 //!
 //! `Kenku Control` is a API to manage your Kenku FM using Rust.
+use reqwest::{self, Client};
+use std::{time::Duration, u16, u64};
 
-use playlist::*;
-use reqwest::{self, Client, StatusCode};
-use serde_json::json;
-use soundboard::*;
-use std::time::Duration;
-
-/// all the content of Soundboard of Kenku FM
-
-pub mod soundboard {
-
-    use reqwest::StatusCode;
-    use serde::{Deserialize, Serialize};
-    use serde_json::json;
-
-    use super::*;
-
-    /// Represents the response from a GET request to a soundboard.
-    ///
-    /// This struct is used to model the response from a GET request to a soundboard. It includes a vector of `Soundboards` and a vector of `Sounds`.
-    ///
-    /// # Fields
-    ///
-    /// * `soundboards` - A vector of `Soundboards` representing the soundboards in the response.
-    /// * `sounds` - A vector of `Sounds` representing the sounds in the response.
-    #[derive(Debug, Deserialize, Serialize, Clone)]
-    pub struct SoundboardGetResponse {
-        pub soundboards: Vec<Soundboards>,
-        pub sounds: Vec<Sounds>,
-    }
-
-    /// Represents the response from a playback request to a soundboard.
-    ///
-    /// This struct is used to model the response from a playback request to a soundboard. It includes a vector of `Sounds`.
-    ///
-    /// # Fields
-    ///
-    /// * `sounds` - A vector of `Sounds` representing the sounds in the response.
-    #[derive(Debug, Deserialize, Serialize, Clone)]
-    pub struct SoundboardPlaybackResponse {
-        sounds: Vec<Sounds>,
-    }
-
-    /// Represents a soundboard.
-    ///
-    /// This struct is used to model a soundboard with its properties.
-    ///
-    /// # Fields
-    ///
-    /// * `id` - A unique identifier for the soundboard.
-    /// * `sounds` - A vector of strings representing the sounds in the soundboard.
-    /// * `background` - A string representing the background of the soundboard.
-    /// * `title` - The title of the soundboard.
-    #[derive(Debug, Deserialize, Serialize, Clone)]
-    pub struct Soundboards {
-        pub id: String,
-        pub sounds: Vec<String>,
-        pub background: String,
-        pub title: String,
-    }
-
-    /// Represents a sound.
-    ///
-    /// This struct is used to model a sound with its properties.
-    ///
-    /// # Fields
-    ///
-    /// * `id` - A unique identifier for the sound.
-    /// * `url` - The URL where the sound file is located.
-    /// * `title` - The title of the sound.
-    /// * `_loop` - A boolean indicating whether the sound should loop.
-    /// * `volume` - The volume level of the sound, represented as a floating point number between 0-1.
-    /// * `fade_in` - The duration of the fade-in effect at the start of the sound, in milliseconds.
-    /// * `fade_out` - The duration of the fade-out effect at the end of the sound, in milliseconds.
-    /// * `duration` - The total duration of the sound, in milliseconds. This is an optional field and only is need in playback response.
-    /// * `progress` - The current progress of the sound, starts in 0 and go to duration. This is an optional field and only is need in playback response.
-    #[derive(Debug, Deserialize, Serialize, Clone)]
-    pub struct Sounds {
-        pub id: String,
-        pub url: String,
-        pub title: String,
-        #[serde(rename = "loop")]
-        pub _loop: bool,
-        pub volume: f64,
-        #[serde(rename = "fadeIn")]
-        pub fade_in: u32,
-        #[serde(rename = "fadeOut")]
-        pub fade_out: u32,
-        pub duration: Option<u32>,
-        pub progress: Option<f64>,
-    }
-
-    impl Sounds {
-        /// Sends a request to the Kenku server to play a specific sound in the soundboard.
-        ///
-        /// This function constructs a URL for the 'SoundboardPlay' command, sends a PUT request to that URL with the track ID as JSON payload, and returns the HTTP status code of the response.
-        ///
-        /// # Arguments
-        ///
-        /// * `self` - A reference to the `Sound` struct, which represents a sound in the soundboard.
-        /// * `controller` - A reference to a `Controller` struct, which includes a HTTP client, the IP address and port of the server, and the current state of the server.
-        ///
-        /// # Returns
-        ///
-        /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-        ///
-        /// # Examples
-        ///
-        /// ```
-        /// let ip = "127.0.0.1".to_string();
-        /// let port = "3333".to_string();
-        ///
-        /// let controller = Controller::new(ip, port);
-        ///
-        /// let playlist = controller.get_soundboard().await.unwrap();
-        /// let sounds = playlist.sounds;  
-        /// for sound in sounds {
-        ///     sound.play(&controller).await;
-        /// }
-        /// ```
-        pub async fn play(&self, controller: &Controller) -> Result<StatusCode, reqwest::Error> {
-            let command = &KenkuCommand::KenkuPut(KenkuPutCommand::SoundboardPlay);
-
-            let url = process_url(command, &controller.ip, &controller.port);
-            let json = json!({"id": self.id});
-
-            let response = controller
-                .client
-                .put(url)
-                .header("Content-Type", "application/json")
-                .json(&json)
-                .send()
-                .await?
-                .status();
-
-            Ok(response)
-        }
-
-        /// Sends a request to the Kenku server to stop a specific sound in the soundboard.
-        ///
-        /// This function constructs a URL for the 'SoundboardPlay' command, sends a PUT request to that URL with the track ID as JSON payload, and returns the HTTP status code of the response.
-        ///
-        /// # Arguments
-        ///
-        /// * `self` - A reference to the `Sound` struct, which represents a sound in the soundboard.
-        /// * `controller` - A reference to a `Controller` struct, which includes a HTTP client, the IP address and port of the server, and the current state of the server.
-        ///
-        /// # Returns
-        ///
-        /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-        ///
-        /// # Examples
-        ///
-        /// ```
-        /// let ip = "127.0.0.1".to_string();
-        /// let port = "3333".to_string();
-        ///
-        /// let controller = Controller::new(ip, port);
-        ///
-        /// let playlist = controller.get_soundboard().await.unwrap();
-        /// let sounds = playlist.sounds;  
-        /// for sound in sounds {
-        ///     sound.stop(&controller).await;
-        /// }
-        /// ```
-        pub async fn stop(&self, controller: &Controller) -> Result<StatusCode, reqwest::Error> {
-            let command = &KenkuCommand::KenkuPut(KenkuPutCommand::SoundboardStop);
-
-            let url = process_url(command, &controller.ip, &controller.port);
-            let json = json!({"id": self.id});
-
-            let response = controller
-                .client
-                .put(url)
-                .header("Content-Type", "application/json")
-                .json(&json)
-                .send()
-                .await?
-                .status();
-
-            Ok(response)
-        }
-    }
-}
-
-/// all the content of Playlist of Kenku FM
-pub mod playlist {
-
-    use super::*;
-    use reqwest::StatusCode;
-    use serde::{Deserialize, Serialize};
-    use serde_json::json;
-
-    /// Represents the repeat mode for a playlist or track.
-    ///
-    /// This enum has three variants:
-    /// * `Track`: Represents that the current track should be repeated.
-    /// * `Playlist`: Represents that the entire playlist should be repeated.
-    /// * `Off`: Represents that no repeat mode is active.
-    #[derive(Debug, Deserialize, Serialize, Clone)]
-    pub enum Repeat {
-        #[serde(rename = "track")]
-        Track,
-        #[serde(rename = "playlist")]
-        Playlist,
-        #[serde(rename = "off")]
-        Off,
-    }
-
-    /// Represents the response from a GET request to a playlist.
-    ///
-    /// This struct is used to model the response from a GET request to a playlist. It includes a vector of `Playlist` and a vector of `Track`.
-    ///
-    /// # Fields
-    ///
-    /// * `playlists` - A vector of `Playlist` representing the playlists in the response.
-    /// * `tracks` - A vector of `Track` representing the tracks in the response.
-    #[derive(Debug, Deserialize, Serialize, Clone)]
-    pub struct PlaylistGetResponse {
-        pub playlists: Vec<Playlist>,
-        pub tracks: Vec<Track>,
-    }
-
-    impl PlaylistGetResponse {
-        /// Returns a reference to the vector of `Playlist` in the `PlaylistGetResponse`.
-        ///
-        /// # Returns
-        ///
-        /// This method returns a reference to the vector of `Playlist` in the `PlaylistGetResponse`.
-        pub fn get_playlists(&self) -> &Vec<Playlist> {
-            return &self.playlists;
-        }
-    }
-
-    /// Represents the response from a playback request to a playlist.
-    ///
-    /// This struct is used to model the response from a playback request to a playlist.
-    ///
-    /// # Fields
-    ///
-    /// * `playing` - A boolean indicating whether the playlist is currently playing.
-    /// * `volume` - The volume level of the playback, represented as a floating point number between 0-1.
-    /// * `muted` - A boolean indicating whether the playback is muted.
-    /// * `shuffle` - A boolean indicating whether the tracks are being played in shuffle mode.
-    /// * `repeat` - The current repeat mode, represented as a `Repeat` enum.
-    /// * `tracks` - An optional vector of `Track` representing the current tracks in the playlist.
-    /// * `playlist` - An optional `Playlist` representing the current playlist.
-    #[derive(Debug, Deserialize, Serialize, Clone)]
-    pub struct PlaylistPlaybackResponse {
-        pub playing: bool,
-        pub volume: f64,
-        pub muted: bool,
-        pub shuffle: bool,
-        pub repeat: Repeat,
-        pub tracks: Option<Vec<Track>>,
-        pub playlist: Option<Playlist>,
-    }
-
-    /// Represents a playlist.
-    ///
-    /// This struct is used to model a playlist with its properties.
-    ///
-    /// # Fields
-    ///
-    /// * `id` - A unique identifier for the playlist.
-    /// * `tracks` - An optional vector of strings representing the tracks in the playlist.
-    /// * `background` - An optional string representing the background of the playlist.
-    /// * `title` - The title of the playlist.
-    #[derive(Debug, Deserialize, Serialize, Clone)]
-    pub struct Playlist {
-        pub id: String,
-        pub tracks: Option<Vec<String>>,
-        pub background: Option<String>,
-        pub title: String,
-    }
-
-    /// Represents a track.
-    ///
-    /// This struct is used to model a track with its properties.
-    ///
-    /// # Fields
-    ///
-    /// * `id` - A unique identifier for the track.
-    /// * `url` - The URL where the track file is located.
-    /// * `title` - The title of the track.
-    /// * `duration` - The total duration of the track, in milliseconds. This is an optional field.
-    /// * `progress` - The current progress of the track, in milliseconds. This is an optional field.
-    #[derive(Debug, Deserialize, Serialize, Clone)]
-    pub struct Track {
-        pub id: String,
-        pub url: String,
-        pub title: String,
-        pub duration: Option<u32>,
-        pub progress: Option<u32>,
-    }
-
-    impl Track {
-        /// Sends a request to the Kenku server to play a specific track in the playlist.
-        ///
-        /// This function constructs a URL for the 'PlaylistPlay' command, sends a PUT request to that URL with the track ID as JSON payload, and returns the HTTP status code of the response.
-        ///
-        /// # Arguments
-        ///
-        /// * `self` - A reference to the `Track` struct, which represents a track in the playlist.
-        /// * `controller` - A reference to a `Controller` struct, which includes a HTTP client, the IP address and port of the server, and the current state of the server.
-        ///
-        /// # Returns
-        ///
-        /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-        ///
-        /// # Examples
-        ///
-        /// ```
-        /// let ip = "127.0.0.1".to_string();
-        /// let port = "3333".to_string();
-        ///
-        /// let controller = Controller::new(ip, port);
-        ///
-        /// let playlist = controller.get_playlist().await.unwrap();
-        /// let tracks = playlist.tracks;  
-        /// for track in tracks {
-        ///     track.play(&controller).await;
-        /// }
-        /// ```
-        pub async fn play(&self, controller: &Controller) -> Result<StatusCode, reqwest::Error> {
-            let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlay);
-
-            let url = process_url(command, &controller.ip, &controller.port);
-            let json = json!({"id": self.id});
-
-            let response = controller
-                .client
-                .put(url)
-                .header("Content-Type", "application/json")
-                .json(&json)
-                .send()
-                .await?
-                .status();
-
-            Ok(response)
-        }
-    }
-}
+pub mod playlist;
+pub mod soundboard;
 
 /// Represents the state of the Kenku server.
 ///
 /// This enum has two variants:
 /// * `Online`: Represents that the Kenku server is online and reachable.
 /// * `Offline`: Represents that the Kenku server is offline or not reachable.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum KenkuState {
     Online,
     Offline,
@@ -371,7 +33,7 @@ pub enum KenkuState {
 /// # Panics
 ///
 /// This function will panic if the client builder fails to build the client.
-pub fn build_client(milisseconds: u64) -> Client {
+fn build_client(milisseconds: u64) -> Client {
     return Client::builder()
         .timeout(Duration::from_millis(milisseconds))
         .build()
@@ -385,25 +47,104 @@ pub fn build_client(milisseconds: u64) -> Client {
 /// # Arguments
 ///
 /// * `ip` - A string slice that holds the IP address of the server.
-/// * `port` - A string slice that holds the port number of the server.
+/// * `port` - A 16 unsigned byte that holds the port number of the server.
+/// * `delay_in_milisseconds` - A 16 unsigned byte that holds the time in milisseconds for the connection timeout.
 ///
 /// # Returns
 ///
 /// This function returns a `KenkuState` that represents the state of the server. If the GET request is successful, it returns `KenkuState::Online`. If the GET request fails, it returns `KenkuState::Offline`.
-///
-/// # Examples
-///
-/// ```
-/// let state = check_kenku_server_state(&"127.0.0.1".to_string(), &"3333".to_string()).await;
-/// println!("{:?}", state);
-/// ```
-pub async fn check_kenku_server_state(ip: &String, port: &String) -> KenkuState {
-    let client = build_client(5);
+pub async fn check_kenku_server_state(ip: &str, port: u16, delay_in_milisseconds: u64) -> KenkuState {
+    let client = build_client(delay_in_milisseconds);
     let test_url = format!("http://{}:{}", ip, port);
 
     match client.get(test_url).send().await {
         Ok(_) => KenkuState::Online,
         Err(_) => KenkuState::Offline,
+    }
+}
+
+/// Create a base url pathern to Kenku Remote
+///
+/// This function takes an IP address and a port, and return a String containing the link for the Kenku Remote server
+///
+/// # Arguments
+///
+/// * `ip` - A string slice that holds the ip addres of the server.
+/// * `port` - A unsigned 16 bit that hlds the port of the server.
+///
+/// # Returns
+///
+/// This function returns a `String` that contains the link containing the kenku remote ip and path
+fn format_base_url(ip: &str, port: u16) -> String {
+    format!("http://{}:{}/v1", ip, port)
+}
+
+/// Processes a GET command for the Kenku Remote server.
+///
+/// This function takes a `KenkuGetCommand`, an IP address, and a port, and returns
+/// a `String` containing the corresponding URL for the command on the Kenku Remote server.
+///
+/// # Arguments
+///
+/// * `command` - A `KenkuGetCommand` enum representing the type of GET command to process.
+/// * `base_url` - A string slice containg the url of the kenku remote
+///
+/// # Returns
+///
+/// Returns a `String` containing the formatted URL corresponding to the command on the Kenku Remote server.
+fn process_get_command(command: &KenkuGetCommand, base_url: &str) -> String {
+    match command {
+        KenkuGetCommand::Soundboard => format!("{}/soundboard", base_url),
+        KenkuGetCommand::SoundboardPlayback => format!("{}/soundboard/playback", base_url),
+        KenkuGetCommand::Playlist => format!("{}/playlist", base_url),
+        KenkuGetCommand::PlaylistPlayback => format!("{}/playlist/playback", base_url)
+    }
+}
+
+/// Processes a PUT command for the Kenku Remote server.
+///
+/// This function takes a `KenkuPutCommand`, an IP address, and a port, and returns
+/// a `String` containing the corresponding URL for the command on the Kenku Remote server.
+///
+/// # Arguments
+///
+/// * `command` - A `KenkuPutCommand` enum representing the type of PUT command to process.
+/// * `base_url` - A string slice containg the url of the kenku remote
+///
+/// # Returns
+///
+/// Returns a `String` containing the formatted URL corresponding to the command on the Kenku Remote server.
+fn process_put_command(command: &KenkuPutCommand, base_url: &str) -> String {
+    match command {
+        KenkuPutCommand::PlaylistPlay => format!("{}/playlist/play", base_url),
+        KenkuPutCommand::PlaylistPlaybackMute => format!("{}/playlist/playback/mute", base_url),
+        KenkuPutCommand::PlaylistPlaybackPause => format!("{}/playlist/playback/pause", base_url),
+        KenkuPutCommand::PlaylistPlaybackPlay => format!("{}/playlist/playback/play", base_url),
+        KenkuPutCommand::PlaylistPlaybackRepeat => format!("{}/playlist/playback/repeat", base_url),
+        KenkuPutCommand::PlaylistPlaybackShuffle => format!("{}/playlist/playback/shuffle", base_url),
+        KenkuPutCommand::PlaylistPlaybackVolume => format!("{}/playlist/playback/volume", base_url),
+        KenkuPutCommand::SoundboardPlay => format!("{}/soundboard/play", base_url),
+        KenkuPutCommand::SoundboardStop => format!("{}/soundboard/stop", base_url),
+    }
+}
+
+/// Processes a POST command for the Kenku Remote server.
+///
+/// This function takes a `KenkuPostCommand`, an IP address, and a port, and returns
+/// a `String` containing the corresponding URL for the command on the Kenku Remote server.
+///
+/// # Arguments
+///
+/// * `command` - A `KenkuPostCommand` enum representing the type of POST command to process.
+/// * `base_url` - A string slice containg the url of the kenku remote
+///
+/// # Returns
+///
+/// Returns a `String` containing the formatted URL corresponding to the command on the Kenku Remote server.
+fn process_post_command(command: &KenkuPostCommand, base_url: &str) -> String {
+    match command {
+        KenkuPostCommand::PlaylistPlaybackNext => format!("{}/playlist/playback/next", base_url),
+        KenkuPostCommand::PlaylistPlaybackPrevious => format!("{}/playlist/playback/previous", base_url),
     }
 }
 
@@ -420,59 +161,12 @@ pub async fn check_kenku_server_state(ip: &String, port: &String) -> KenkuState 
 /// # Returns
 ///
 /// This function returns a `String` that represents the constructed URL.
-///
-/// # Examples
-///
-/// ```
-/// let command = KenkuGetCommand::Soundboard;
-/// let ip = "localhost";
-/// let port = "8080";
-/// let url = process_url(&command, &ip, &port);
-/// assert_eq!(url, "http://localhost:8080/v1/soundboard");
-/// ```
-pub fn process_url(command: &KenkuCommand, ip: &String, port: &String) -> String {
+fn process_url(command: &KenkuCommand, ip: &str, port: u16) -> String {
+    let base_url = format_base_url(ip, port);
     match command {
-        KenkuCommand::KenkuGet(get_command) => match get_command {
-            KenkuGetCommand::Soundboard => format!("http://{}:{}/v1/soundboard", ip, port),
-            KenkuGetCommand::SoundboardPlayback => {
-                format!("http://{}:{}/v1/soundboard/playback", ip, port)
-            }
-            KenkuGetCommand::Playlist => format!("http://{}:{}/v1/playlist", ip, port),
-            KenkuGetCommand::PlaylistPlayback => {
-                format!("http://{}:{}/v1/playlist/playback", ip, port)
-            }
-        },
-        KenkuCommand::KenkuPut(put_command) => match put_command {
-            KenkuPutCommand::PlaylistPlay => format!("http://{}:{}/v1/playlist/play", ip, port),
-            KenkuPutCommand::PlaylistPlaybackMute => {
-                format!("http://{}:{}/v1/playlist/playback/mute", ip, port)
-            }
-            KenkuPutCommand::PlaylistPlaybackPause => {
-                format!("http://{}:{}/v1/playlist/playback/pause", ip, port)
-            }
-            KenkuPutCommand::PlaylistPlaybackPlay => {
-                format!("http://{}:{}/v1/playlist/playback/play", ip, port)
-            }
-            KenkuPutCommand::PlaylistPlaybackRepeat => {
-                format!("http://{}:{}/v1/playlist/playback/repeat", ip, port)
-            }
-            KenkuPutCommand::PlaylistPlaybackShuffle => {
-                format!("http://{}:{}/v1/playlist/playback/shuffle", ip, port)
-            }
-            KenkuPutCommand::PlaylistPlaybackVolume => {
-                format!("http://{}:{}/v1/playlist/playback/volume", ip, port)
-            }
-            KenkuPutCommand::SoundboardPlay => format!("http://{}:{}/v1/soundboard/play", ip, port),
-            KenkuPutCommand::SoundboardStop => format!("http://{}:{}/v1/soundboard/stop", ip, port),
-        },
-        KenkuCommand::KenkuPost(post_command) => match post_command {
-            KenkuPostCommand::PlaylistPlaybackNext => {
-                format!("http://{}:{}/v1/playlist/playback/next", ip, port)
-            }
-            KenkuPostCommand::PlaylistPlaybackPrevious => {
-                format!("http://{}:{}/v1/playlist/playback/previous", ip, port)
-            }
-        },
+        KenkuCommand::KenkuGet(get_command) => process_get_command(get_command, base_url.as_str()),
+        KenkuCommand::KenkuPut(put_command) => process_put_command(put_command, base_url.as_str()),
+        KenkuCommand::KenkuPost(post_command) => process_post_command(post_command, base_url.as_str()),
     }
 }
 
@@ -489,7 +183,7 @@ pub enum KenkuPlaybackCommand {
     PlaylistPlaybackMute(bool),
     PlaylistPlaybackVolume(f64),
     PlaylistPlaybackShuffle(bool),
-    PlaylistPlaybackRepeat(Repeat),
+    PlaylistPlaybackRepeat(playlist::Repeat),
 }
 
 /// Represents a command to be sent to the Kenku server.
@@ -562,297 +256,10 @@ pub enum KenkuGetCommand {
 ///
 /// This enum can hold a response of any type, including `SoundboardGetResponse`, `SoundboardPlaybackResponse`, `PlaylistGetResponse`, and `PlaylistPlaybackResponse`.
 pub enum KenkuResponse {
-    SoundboardGet(SoundboardGetResponse),
-    SoundboardPlayback(SoundboardPlaybackResponse),
-    PlaylistGet(PlaylistGetResponse),
-    PlaylistPlayback(PlaylistPlaybackResponse),
-}
-
-/// Sends a request to the Kenku server to play the current track in the playlist.
-///
-/// This function constructs a URL for the 'PlaylistPlaybackPlay' command, sends a PUT request to that URL, and returns the HTTP status code of the response.
-///
-/// # Arguments
-///
-/// * `controller` - A reference to a `Controller` struct, which includes a HTTP client, the IP address and port of the server, and the current state of the server.
-///
-/// # Returns
-///
-/// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-///
-/// # Examples
-///
-/// ```
-/// let ip = "127.0.0.1".to_string();
-/// let port = "3333".to_string();
-///
-/// let controller = Controller::new(ip, port);
-///
-/// let result = playback_play(&controller).await;
-/// ```
-pub async fn playback_play(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
-    let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPlay);
-    let url = process_url(command, &controller.ip, &controller.port);
-
-    let response = controller.client.put(url).send().await?.status();
-
-    Ok(response)
-}
-
-/// Sends a request to the Kenku server to pause the current track in the playlist.
-///
-/// This function constructs a URL for the 'PlaylistPlaybackPause' command, sends a PUT request to that URL, and returns the HTTP status code of the response.
-///
-/// # Arguments
-///
-/// * `controller` - A reference to a `Controller` struct, which includes a HTTP client, the IP address and port of the server, and the current state of the server.
-///
-/// # Returns
-///
-/// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-///
-/// # Examples
-///
-/// ```
-/// let ip = "127.0.0.1".to_string();
-/// let port = "3333".to_string();
-///
-/// let controller = Controller::new(ip, port);
-///
-/// let result = playback_pause(&controller).await;
-/// ```
-pub async fn playback_pause(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
-    let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPause);
-    let url = process_url(command, &controller.ip, &controller.port);
-
-    let response = controller.client.put(url).send().await?.status();
-
-    Ok(response)
-}
-
-/// Sends a request to the Kenku server to play the next track in the playlist.
-///
-/// This function constructs a URL for the 'PlaylistPlaybackNext' command, sends a POST request to that URL, and returns the HTTP status code of the response.
-///
-/// # Arguments
-///
-/// * `controller` - A reference to a `Controller` struct, which includes a HTTP client, the IP address and port of the server, and the current state of the server.
-///
-/// # Returns
-///
-/// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-///
-/// # Examples
-///
-/// ```
-/// let ip = "127.0.0.1".to_string();
-/// let port = "3333".to_string();
-///
-/// let controller = Controller::new(ip, port);
-///
-/// let result = playback_next(&controller).await;
-/// ```
-pub async fn playback_next(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
-    let command = &KenkuCommand::KenkuPost(KenkuPostCommand::PlaylistPlaybackNext);
-    let url = process_url(command, &controller.ip, &controller.port);
-    println!("{url}");
-    let response = controller.client.post(url).send().await?.status();
-
-    Ok(response)
-}
-
-/// Sends a PUT request to the Kenku server to mute or unmute the playlist.
-///
-/// This function takes a reference to a `Controller` and a boolean, constructs a URL and a JSON payload, and sends a PUT request to the Kenku server. The server's response status is returned.
-///
-/// # Arguments
-///
-/// * `controller` - A reference to a `Controller` struct, which includes a HTTP client, the IP address and port of the server, and the current state of the server.
-/// * `mute` - A boolean that specifies whether to mute (`true`) or unmute (`false`) the playlist.
-///
-/// # Returns
-///
-/// This function returns a `Result` that contains a `StatusCode`, if the request was sent successfully, or a `reqwest::Error`, if the request failed.
-///
-/// # Examples
-///
-/// ```
-/// let ip = "127.0.0.1".to_string();
-/// let port = "3333".to_string();
-///
-/// let controller = Controller::new(ip, port);
-///
-/// let mute = true;
-/// let status = playback_mute(&controller, mute).await;
-/// ```
-pub async fn playback_mute(
-    controller: &Controller,
-    mute: bool,
-) -> Result<StatusCode, reqwest::Error> {
-    let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackMute);
-    let url = process_url(command, &controller.ip, &controller.port);
-    let json = json!({"mute": mute});
-
-    let response = controller
-        .client
-        .put(url)
-        .header("content-type", "application/json")
-        .json(&json)
-        .send()
-        .await?
-        .status();
-
-    Ok(response)
-}
-
-/// Changes the volume of the playlist.
-///
-/// This function takes a `Controller` and a floating point number representing the desired volume level.
-/// It sends a PUT request to the server to change the volume of the playlist.
-///
-/// # Arguments
-///
-/// * `controller` - A reference to a `Controller` struct, which includes the HTTP client, the IP address and port of the server, and the current state of the server.
-/// * `volume` - A floating point number representing the desired volume level. The value should be between 0.0 and 1.0, where 0.0 is mute and 1.0 is the maximum volume.
-///
-/// # Returns
-///
-/// This function returns a `Result` with a `StatusCode`. If the PUT request is successful, it returns `Ok(StatusCode)`. If the PUT request fails, it returns `Err(reqwest::Error)`.
-///
-/// # Examples
-///
-/// ```
-/// let ip = "127.0.0.1".to_string();
-/// let port = "3333".to_string();
-///
-/// let controller = Controller::new(ip, port);
-///
-/// let result = playback_volume(&controller, 0.5).await;
-/// ```
-pub async fn playback_volume(
-    controller: &Controller,
-    volume: f64,
-) -> Result<StatusCode, reqwest::Error> {
-    // Define the command as a volume command
-    let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackVolume);
-
-    // Construct the URL for the PUT request
-    let url = process_url(command, &controller.ip, &controller.port);
-
-    // Create the JSON payload for the request
-    let json = json!({"volume": volume});
-
-    // Send the PUT request to the server and get the response status
-    let response = controller
-        .client
-        .put(url)
-        .header("content-type", "application/json")
-        .json(&json)
-        .send()
-        .await?
-        .status();
-
-    // Return the response status
-    Ok(response)
-}
-
-/// Changes the shuffle state of the playlist.
-///
-/// This function takes a `Controller` and a boolean value representing the desired shuffle state.
-/// It sends a PUT request to the server to change the shuffle state of the playlist.
-///
-/// # Arguments
-///
-/// * `controller` - A reference to a `Controller` struct, which includes the HTTP client, the IP address and port of the server, and the current state of the server.
-/// * `shuffle` - A boolean value representing the desired shuffle state. If `true`, the tracks in the playlist will be played in a random order. If `false`, the tracks will be played in the order they appear in the playlist.
-///
-/// # Returns
-///
-/// This function returns a `Result` with a `StatusCode`. If the PUT request is successful, it returns `Ok(StatusCode)`. If the PUT request fails, it returns `Err(reqwest::Error)`.
-///
-/// # Examples
-///
-/// ```
-/// let ip = "127.0.0.1".to_string();
-/// let port = "3333".to_string();
-///
-/// let controller = Controller::new(ip, port);
-///
-/// let result = playback_shuffle(&controller, true).await;
-/// ```
-pub async fn playback_shuffle(
-    controller: &Controller,
-    shuffle: bool,
-) -> Result<StatusCode, reqwest::Error> {
-    // Define the command as a shuffle command
-    let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackShuffle);
-
-    // Construct the URL for the PUT request
-    let url = process_url(command, &controller.ip, &controller.port);
-
-    // Create the JSON payload for the request
-    let json = json!({"shuffle": shuffle});
-
-    // Send the PUT request to the server and get the response status
-    let response = controller
-        .client
-        .put(url)
-        .header("content-type", "application/json")
-        .json(&json)
-        .send()
-        .await?
-        .status();
-
-    // Return the response status
-    Ok(response)
-}
-
-/// Sends a PUT request to the Kenku server to set the repeat mode of the playlist.
-///
-/// This function takes a reference to a `Controller` and a `Repeat` enum, constructs a URL and a JSON payload, and sends a PUT request to the Kenku server. The server's response status is returned.
-///
-/// # Arguments
-///
-/// * `controller` - A reference to a `Controller` struct, which includes a HTTP client, the IP address and port of the server, and the current state of the server.
-/// * `repeat` - A `Repeat` enum, which specifies the repeat mode to set. It can be `Repeat::Track`, `Repeat::Playlist`, or `Repeat::Off`.
-///
-/// # Returns
-///
-/// This function returns a `Result` that contains a `StatusCode`, if the request was sent successfully, or a `reqwest::Error`, if the request failed.
-///
-/// # Examples
-///
-/// ```
-/// let ip = "127.0.0.1".to_string();
-/// let port = "3333".to_string();
-///
-/// let controller = Controller::new(ip, port);
-///
-/// let repeat = Repeat::Playlist;
-/// let status = playback_repeat(&controller, repeat).await;
-/// ```
-pub async fn playback_repeat(
-    controller: &Controller,
-    repeat: Repeat,
-) -> Result<StatusCode, reqwest::Error> {
-    let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackRepeat);
-    let url = process_url(command, &controller.ip, &controller.port);
-    let json = json!({"repeat": repeat});
-
-    println!("{url}");
-
-    println!("{json}");
-
-    let response = controller
-        .client
-        .put(url)
-        .header("content-type", "application/json")
-        .json(&json)
-        .send()
-        .await?
-        .status();
-
-    Ok(response)
+    SoundboardGet(soundboard::SoundboardGetResponse),
+    SoundboardPlayback(soundboard::SoundboardPlaybackResponse),
+    PlaylistGet(playlist::PlaylistGetResponse),
+    PlaylistPlayback(playlist::PlaylistPlaybackResponse),
 }
 
 /// Represents a controller for the Kenku server.
@@ -868,8 +275,8 @@ pub async fn playback_repeat(
 #[derive(Debug)]
 pub struct Controller {
     pub client: Client,
-    pub ip: String,
-    pub port: String,
+    pub ip: &'static str,
+    pub port: u16,
     pub kenku_remote_state: KenkuState,
 }
 
@@ -889,22 +296,13 @@ impl Controller {
     /// # Returns
     ///
     /// This function returns a new `Controller` with the specified IP address, port, and an initial server state of `KenkuState::Offline`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let ip = "127.0.0.1".to_string();
-    /// let port = "3333".to_string();
-    ///
-    /// let controller = Controller::new(ip, port);
-    /// ```
-    pub fn new(ip: String, port: String) -> Controller {
+    pub fn new(ip: &'static str, port: u16) -> Controller {
         let client = build_client(20);
 
         Controller {
-            client: client,
-            ip: ip,
-            port: port,
+            client,
+            ip,
+            port,
             kenku_remote_state: KenkuState::Offline,
         }
     }
@@ -916,28 +314,18 @@ impl Controller {
     /// # Returns
     ///
     /// A `Result` which is either a `SoundboardGetResponse` or a `reqwest::Error`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let ip = "127.0.0.1".to_string();
-    /// let port = "3333".to_string();
-    ///
-    /// let controller = Controller::new(ip, port);
-    /// controller.get_soundboard().await.unwrap();
-    /// ```
-    pub async fn get_soundboard(&self) -> Result<SoundboardGetResponse, reqwest::Error> {
+    pub async fn get_soundboard(&self) -> Result<soundboard::SoundboardGetResponse , reqwest::Error> {
         let url = process_url(
             &KenkuCommand::KenkuGet(KenkuGetCommand::Soundboard),
-            &self.ip,
-            &self.port,
+            self.ip,
+            self.port,
         );
         let response = self
             .client
             .get(url)
             .send()
             .await?
-            .json::<SoundboardGetResponse>()
+            .json::<soundboard::SoundboardGetResponse>()
             .await?;
         Ok(response)
     }
@@ -949,30 +337,20 @@ impl Controller {
     /// # Returns
     ///
     /// A `Result` which is either a `SoundboardPlaybackResponse` or a `reqwest::Error`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let ip = "127.0.0.1".to_string();
-    /// let port = "3333".to_string();
-    ///
-    /// let controller = Controller::new(ip, port);
-    /// controller.get_soundboard_playback().await.unwrap();
-    /// ```
     pub async fn get_soundboard_playback(
         &self,
-    ) -> Result<SoundboardPlaybackResponse, reqwest::Error> {
+    ) -> Result<soundboard::SoundboardPlaybackResponse, reqwest::Error> {
         let url = process_url(
             &KenkuCommand::KenkuGet(KenkuGetCommand::SoundboardPlayback),
-            &self.ip,
-            &self.port,
+            self.ip,
+            self.port,
         );
         let response = self
             .client
             .get(url)
             .send()
             .await?
-            .json::<SoundboardPlaybackResponse>()
+            .json::<soundboard::SoundboardPlaybackResponse>()
             .await?;
         Ok(response)
     }
@@ -984,28 +362,18 @@ impl Controller {
     /// # Returns
     ///
     /// A `Result` which is either a `PlaylistGetResponse` or a `reqwest::Error`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let ip = "127.0.0.1".to_string();
-    /// let port = "3333".to_string();
-    ///
-    /// let controller = Controller::new(ip, port);
-    /// controller.get_playlist().await.unwrap();
-    /// ```
-    pub async fn get_playlist(&self) -> Result<PlaylistGetResponse, reqwest::Error> {
+    pub async fn get_playlist(&self) -> Result<playlist::PlaylistGetResponse, reqwest::Error> {
         let url = process_url(
             &KenkuCommand::KenkuGet(KenkuGetCommand::Playlist),
-            &self.ip,
-            &self.port,
+            self.ip,
+            self.port,
         );
         let response = self
             .client
             .get(url)
             .send()
             .await?
-            .json::<PlaylistGetResponse>()
+            .json::<playlist::PlaylistGetResponse>()
             .await?;
         Ok(response)
     }
@@ -1017,29 +385,148 @@ impl Controller {
     /// # Returns
     ///
     /// A `Result` which is either a `PlaylistPlaybackResponse` or a `reqwest::Error`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// let ip = "127.0.0.1".to_string();
-    /// let port = "3333".to_string();
-    ///
-    /// let controller = Controller::new(ip, port);
-    /// controller.get_playlist_playback().await.unwrap();
-    /// ```
-    pub async fn get_playlist_playback(&self) -> Result<PlaylistPlaybackResponse, reqwest::Error> {
+    pub async fn get_playlist_playback(&self) -> Result<playlist::PlaylistPlaybackResponse, reqwest::Error> {
         let url = process_url(
             &KenkuCommand::KenkuGet(KenkuGetCommand::PlaylistPlayback),
-            &self.ip,
-            &self.port,
+            self.ip,
+            self.port,
         );
         let response = self
             .client
             .get(url)
             .send()
             .await?
-            .json::<PlaylistPlaybackResponse>()
+            .json::<playlist::PlaylistPlaybackResponse>()
             .await?;
         Ok(response)
     }
 }
+
+#[cfg(test)]
+mod kenku_commands {
+    use super::{process_url, KenkuCommand, KenkuGetCommand, KenkuPutCommand, KenkuPostCommand};
+    const DEFAULT_IP_ADDRESS: &str = "127.0.0.1";
+    const DEFAULT_PORT: u16 = 3333;
+
+    #[test]
+    fn get_soundboard_link_creation() {
+        let command = KenkuCommand::KenkuGet(KenkuGetCommand::Soundboard);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/soundboard", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn get_playlist_link_creation() {
+        let command = KenkuCommand::KenkuGet(KenkuGetCommand::Playlist);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn get_soundboard_playback_link_creation() {
+        let command = KenkuCommand::KenkuGet(KenkuGetCommand::SoundboardPlayback);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/soundboard/playback", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn get_playlist_playback_link_creation() {
+        let command = KenkuCommand::KenkuGet(KenkuGetCommand::PlaylistPlayback);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist/playback", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn put_playlist_play_link_creation() {
+        let command = KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlay);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist/play", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn put_playlist_playback_mute_link_creation() {
+        let command = KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackMute);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist/playback/mute", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn put_playlist_playback_pause_link_creation() {
+        let command = KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPause);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist/playback/pause", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn put_playlist_playback_play_link_creation() {
+        let command = KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPlay);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist/playback/play", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn put_playlist_playback_repeat_link_creation() {
+        let command = KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackRepeat);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist/playback/repeat", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn put_playlist_playback_shuffle_link_creation() {
+        let command = KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackShuffle);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist/playback/shuffle", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn put_playlist_playback_volume_link_creation() {
+        let command = KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackVolume);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist/playback/volume", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn put_soundboard_play_link_creation() {
+        let command = KenkuCommand::KenkuPut(KenkuPutCommand::SoundboardPlay);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/soundboard/play", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn put_soundboard_stop_link_creation() {
+        let command = KenkuCommand::KenkuPut(KenkuPutCommand::SoundboardStop);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/soundboard/stop", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn post_playlist_playback_next_link_creation() {
+        let command = KenkuCommand::KenkuPost(KenkuPostCommand::PlaylistPlaybackNext);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist/playback/next", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+    #[test]
+    fn post_playlist_playback_previous_link_creation() {
+        let command = KenkuCommand::KenkuPost(KenkuPostCommand::PlaylistPlaybackPrevious);
+        let url = process_url(&command, DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        let expected_url = format!("http://{}:{}/v1/playlist/playback/previous", DEFAULT_IP_ADDRESS, DEFAULT_PORT);
+        assert_eq!(url, expected_url);
+    }
+
+}
+

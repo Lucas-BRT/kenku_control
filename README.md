@@ -1,35 +1,49 @@
 # Kenku Control
 
-[![Build Status](https://img.shields.io/travis/Lucas-BRT/kenku_control/master.svg)](https://travis-ci.org/Lucas-BRT/kenku_control)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Lucas-BRT/kenku_control/blob/master/LICENSE)
 
 Kenku Control is a library for controlling Kenku FM. It provides a set of functions and utilities to interact with the Kenku Remote.
 
 ## Features
 
-- List all tracks and sounds in your kenku.
-- Control the playback state.
-- individual controll of the medias and the folders.
+- Retrieve information about all tracks and sounds available on your Kenku FM device.
+- Control playback of tracks and sounds.
+- Manage playlist playback using straightforward commands.
 
 ## Usage
 
-Here's an example of how to use Kenku Control in your Rust code:
+To use Kenku Control in your Rust project, add the following to your Cargo.toml file:
+
+```toml
+[dependencies]
+kenku_control = "0.1.2"
+```
+
+Alternatively, you can use cargo add to automatically manage dependencies:
 
 ```
+cargo add kenku_control
+```
+
+
+Here's an example demonstrating how to interact with Kenku in your Rust code:
+
+```rust
+use kenku_control::Controller;
+
 #[tokio::main]
 async fn main() {
-    let ip = "127.0.0.1".to_string();
-    let port = "3333".to_string();
+    let ip = "127.0.0.1";
+    let port = "3333";
 
     let controller = Controller::new(ip, port);
-    let playlists = controller.get_playlist().await.unwrap();
-    
-    for track in playlists.tracks {
-        let status = track.play(&controller).await.unwrap();
-        println!("{status:#?}");
+
+    let tracks = match controller.get_playlist().await.unwrap().tracks;
+
+    for track in tracks {
+        track.play(&controller).await.unwrap();
     }
 }
-
 ```
 
 Make sure you have a Kenku Remote Online in your computer before running the code.
