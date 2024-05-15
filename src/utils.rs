@@ -39,7 +39,7 @@ pub async fn check_kenku_server_state(
 /// # Returns
 ///
 /// This function returns a `String` that contains the link containing the kenku remote ip and path
-pub fn format_base_url(ip: &str, port: u16) -> String {
+pub fn format_base_url(ip: String, port: u16) -> String {
     format!("http://{}:{}/v1", ip, port)
 }
 
@@ -129,8 +129,9 @@ pub fn process_post_command(command: &KenkuPostCommand, base_url: &str) -> Strin
 /// # Returns
 ///
 /// This function returns a `String` that represents the constructed URL.
-pub fn process_url(command: &KenkuCommand, ip: &str, port: u16) -> String {
-    let base_url = format_base_url(ip, port);
+pub fn process_url(command: &KenkuCommand, address: SocketAddrV4) -> String {
+    let base_url = format_base_url(address.ip().to_string(), address.port());
+
     match command {
         KenkuCommand::KenkuGet(get_command) => process_get_command(get_command, base_url.as_str()),
         KenkuCommand::KenkuPut(put_command) => process_put_command(put_command, base_url.as_str()),
