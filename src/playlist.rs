@@ -140,7 +140,10 @@ impl Track {
 #[allow(unused)]
 pub mod playback {
 
-    use super::{Controller, KenkuCommand, KenkuPutCommand, KenkuPostCommand, StatusCode, process_url, json, playlist};
+    use super::{
+        json, playlist, process_url, Controller, KenkuCommand, KenkuPostCommand, KenkuPutCommand,
+        StatusCode,
+    };
 
     /// Sends a request to the Kenku server to play the current track in the playlist.
     ///
@@ -348,4 +351,3 @@ pub mod playback {
         Ok(response)
     }
 }
-
