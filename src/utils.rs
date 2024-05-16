@@ -1,4 +1,5 @@
 use super::*;
+use std::net::TcpStream;
 
 /// Checks the state of the Kenku server.
 ///
@@ -13,18 +14,14 @@ use super::*;
 /// # Returns
 ///
 /// This function returns a `KenkuState` that represents the state of the server. If the GET request is successful, it returns `KenkuState::Online`. If the GET request fails, it returns `KenkuState::Offline`.
-pub async fn check_kenku_server_state(
-    ip: &str,
-    port: u16,
-    delay_in_milisseconds: u64,
-) -> KenkuState {
-    let client = build_client(delay_in_milisseconds);
-    let test_url = format!("http://{}:{}", ip, port);
+pub async fn check_kenku_server_state(address: SocketAddrV4) -> KenkuState {
+    let is_server_online = TcpStream::connect(address).is_ok();
 
-    match client.get(test_url).send().await {
-        Ok(_) => KenkuState::Online,
-        Err(_) => KenkuState::Offline,
+    if !is_server_online {
+        return KenkuState::Offline;
     }
+
+    KenkuState::Online
 }
 
 /// Create a base url pathern to Kenku Remote

@@ -173,9 +173,19 @@ impl Controller {
     ///
     /// This function returns a new `Controller` with the specified IP address, port, and an initial server state of `KenkuState::Offline`.
     pub fn new(ip: String, port: u16) -> Controller {
-        let client = build_client(20);
+        let client = build_client(100);
         let ip = Ipv4Addr::from_str(ip.as_str()).expect("failed to convert String ip to Ipv4Addr.");
         let address = SocketAddrV4::new(ip, port);
+
+        Controller {
+            client,
+            address,
+            kenku_remote_state: KenkuState::Offline,
+        }
+    }
+
+    pub fn from_ipv4(address: SocketAddrV4) -> Controller {
+        let client = build_client(100);
 
         Controller {
             client,
