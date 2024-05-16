@@ -6,8 +6,11 @@ const DEFAULT_PORT: u16 = 3333;
 
 #[tokio::test]
 async fn play_a_randon_track() {
-    let controller = Controller::new(DEFAULT_IP_ADDRESS, DEFAULT_PORT);
-    let playlists = controller.get_playlist().await.unwrap();
+    let controller = Controller::new(DEFAULT_IP_ADDRESS.to_string(), DEFAULT_PORT);
+    let playlists = controller
+        .get_playlist()
+        .await
+        .expect("failed to get kenku playlists");
     let playlist_tracks = Some(playlists.tracks);
 
     match playlist_tracks {
@@ -17,8 +20,7 @@ async fn play_a_randon_track() {
 
             let status_code = track.play(&controller).await.unwrap();
             assert_eq!(status_code.is_success(), true);
-        },
-        None => ()
+        }
+        None => (),
     }
 }
-
