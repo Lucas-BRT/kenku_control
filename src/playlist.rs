@@ -121,7 +121,7 @@ impl Track {
     /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
     pub async fn play(&self, controller: &Controller) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlay);
-        let url = process_url(command, controller.ip, controller.port);
+        let url = process_url(command, controller.address);
         let json = json!({"id": self.id});
 
         let response = controller
@@ -140,7 +140,10 @@ impl Track {
 #[allow(unused)]
 pub mod playback {
 
-    use super::{Controller, KenkuCommand, KenkuPutCommand, KenkuPostCommand, StatusCode, process_url, json, playlist};
+    use super::{
+        json, playlist, process_url, Controller, KenkuCommand, KenkuPostCommand, KenkuPutCommand,
+        StatusCode,
+    };
 
     /// Sends a request to the Kenku server to play the current track in the playlist.
     ///
@@ -155,7 +158,7 @@ pub mod playback {
     /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
     pub async fn playback_play(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPlay);
-        let url = process_url(command, controller.ip, controller.port);
+        let url = process_url(command, controller.address);
         let response = controller.client.put(url).send().await?.status();
 
         Ok(response)
@@ -174,7 +177,7 @@ pub mod playback {
     /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
     pub async fn playback_pause(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPause);
-        let url = process_url(command, controller.ip, controller.port);
+        let url = process_url(command, controller.address);
         let response = controller.client.put(url).send().await?.status();
 
         Ok(response)
@@ -193,7 +196,7 @@ pub mod playback {
     /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
     pub async fn playback_next(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPost(KenkuPostCommand::PlaylistPlaybackNext);
-        let url = process_url(command, controller.ip, controller.port);
+        let url = process_url(command, controller.address);
         let response = controller.client.post(url).send().await?.status();
 
         Ok(response)
@@ -212,7 +215,7 @@ pub mod playback {
     /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
     pub async fn playback_previous(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPost(KenkuPostCommand::PlaylistPlaybackPrevious);
-        let url = process_url(command, controller.ip, controller.port);
+        let url = process_url(command, controller.address);
         let response = controller.client.post(url).send().await?.status();
 
         Ok(response)
@@ -235,7 +238,7 @@ pub mod playback {
         mute: bool,
     ) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackMute);
-        let url = process_url(command, controller.ip, controller.port);
+        let url = process_url(command, controller.address);
         let json = json!({"mute": mute});
 
         let response = controller
@@ -268,7 +271,7 @@ pub mod playback {
         volume: f64,
     ) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackVolume);
-        let url = process_url(command, controller.ip, controller.port);
+        let url = process_url(command, controller.address);
         let json = json!({"volume": volume});
 
         let response = controller
@@ -301,7 +304,7 @@ pub mod playback {
         shuffle: bool,
     ) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackShuffle);
-        let url = process_url(command, controller.ip, controller.port);
+        let url = process_url(command, controller.address);
         let json = json!({"shuffle": shuffle});
 
         let response = controller
@@ -333,7 +336,7 @@ pub mod playback {
         repeat: playlist::Repeat,
     ) -> Result<StatusCode, reqwest::Error> {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackRepeat);
-        let url = process_url(command, controller.ip, controller.port);
+        let url = process_url(command, controller.address);
         let json = json!({"repeat": repeat});
 
         let response = controller
@@ -348,4 +351,3 @@ pub mod playback {
         Ok(response)
     }
 }
-

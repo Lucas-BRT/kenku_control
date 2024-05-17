@@ -16,7 +16,7 @@ To use Kenku Control in your Rust project, add the following to your Cargo.toml 
 
 ```toml
 [dependencies]
-kenku_control = "0.1.2"
+kenku_control = "0.2.1"
 ```
 
 Alternatively, you can use cargo add to automatically manage dependencies:
@@ -33,16 +33,16 @@ use kenku_control::Controller;
 
 #[tokio::main]
 async fn main() {
-    let ip = "127.0.0.1";
-    let port = "3333";
+    let controller = Controler::new("127.0.0.1".to_string(), 3333);
 
-    let controller = Controller::new(ip, port);
-
-    let tracks = match controller.get_playlist().await.unwrap().tracks;
-
-    for track in tracks {
-        track.play(&controller).await.unwrap();
-    }
+    let soundboards = controller
+        .get_soundboard()
+        .await
+        .expect("failed to get kenku soundboards");
+    // play all sounds in your soundboards
+    for sound in soundboards.sounds {
+        sound.play(&controller).await.unwrap();
+    };
 }
 ```
 
