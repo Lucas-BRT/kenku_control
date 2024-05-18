@@ -64,7 +64,7 @@ pub struct PlaylistPlaybackResponse {
     pub muted: bool,
     pub shuffle: bool,
     pub repeat: Repeat,
-    pub tracks: Option<Vec<Track>>,
+    pub track: Option<Track>,
     pub playlist: Option<Playlist>,
 }
 
