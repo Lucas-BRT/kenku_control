@@ -100,6 +100,7 @@ pub struct Playlist {
 /// * `title` - The title of the track.
 /// * `duration` - The total duration of the track, in milliseconds. This is an optional field.
 /// * `progress` - The current progress of the track, in milliseconds. This is an optional field.
+#[serde_with::skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Track {
     pub id: String,
