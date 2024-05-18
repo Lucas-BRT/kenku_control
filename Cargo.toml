@@ -1,6 +1,7 @@
+workspace = { members = ["examples/basic"] }
 [package]
 name = "kenku_control"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 authors = ["Lucas-BRT"]
 description = "A library for manage Kenku FM using Kenku Remote"
@@ -14,6 +15,7 @@ documentation = "https://docs.rs/kenku_control/0.1.0/kenku_control/"
 reqwest = { version = "0.11", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+serde_with = "3.8.1"
 
 [dev-dependencies]
 tokio = { version = "1.37.0", features = ["full"]}
