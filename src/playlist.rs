@@ -2,6 +2,7 @@ use super::*;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use serde_with::skip_serializing_none;
 
 /// Represents the repeat mode for a playlist or track.
 ///
@@ -57,6 +58,7 @@ impl PlaylistGetResponse {
 /// * `repeat` - The current repeat mode, represented as a `Repeat` enum.
 /// * `tracks` - An optional vector of `Track` representing the current tracks in the playlist.
 /// * `playlist` - An optional `Playlist` representing the current playlist.
+#[serde_with::skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct PlaylistPlaybackResponse {
     pub playing: bool,
@@ -78,6 +80,7 @@ pub struct PlaylistPlaybackResponse {
 /// * `tracks` - An optional vector of strings representing the tracks in the playlist.
 /// * `background` - An optional string representing the background of the playlist.
 /// * `title` - The title of the playlist.
+#[serde_with::skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Playlist {
     pub id: String,

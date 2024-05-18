@@ -2,6 +2,7 @@
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use serde_with::skip_serializing_none;
 
 use super::*;
 
@@ -41,6 +42,7 @@ pub struct SoundboardPlaybackResponse {
 /// * `sounds` - A vector of strings representing the sounds in the soundboard.
 /// * `background` - A string representing the background of the soundboard.
 /// * `title` - The title of the soundboard.
+#[serde_with::skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Soundboards {
     pub id: String,
@@ -64,6 +66,7 @@ pub struct Soundboards {
 /// * `fade_out` - The duration of the fade-out effect at the end of the sound, in milliseconds.
 /// * `duration` - The total duration of the sound, in milliseconds. This is an optional field and only is need in playback response.
 /// * `progress` - The current progress of the sound, starts in 0 and go to duration. This is an optional field and only is need in playback response.
+#[serde_with::skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Sounds {
     pub id: String,
