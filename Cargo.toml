@@ -1,4 +1,3 @@
-workspace = { members = ["examples/basic"] }
 [package]
 name = "kenku_control"
 version = "0.2.2"
