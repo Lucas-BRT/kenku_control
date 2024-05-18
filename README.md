@@ -16,7 +16,7 @@ To use Kenku Control in your Rust project, add the following to your Cargo.toml 
 
 ```toml
 [dependencies]
-kenku_control = "0.2.1"
+kenku_control = "0.2.3"
 ```
 
 Alternatively, you can use cargo add to automatically manage dependencies:
