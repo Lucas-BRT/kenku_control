@@ -11,7 +11,7 @@ async fn pause_playlist_playback() {
         .await
         .expect("failed to pause the playback.");
 
-    assert_eq!(command.is_success(), true);
+    assert!(command.is_success());
 }
 
 #[tokio::test]
@@ -21,7 +21,7 @@ async fn play_playlist_playback() {
         .await
         .expect("failed to play the playback.");
 
-    assert_eq!(command.is_success(), true);
+    assert!(command.is_success());
 }
 
 #[tokio::test]
@@ -31,7 +31,7 @@ async fn next_playlist_playback() {
         .await
         .expect("failed to go to next track on playback.");
 
-    assert_eq!(command.is_success(), true);
+    assert!(command.is_success());
 }
 
 #[tokio::test]
@@ -41,7 +41,7 @@ async fn previous_playlist_playback() {
         .await
         .expect("failed to go to previous track on playback.");
 
-    assert_eq!(command.is_success(), true);
+    assert!(command.is_success());
 }
 
 #[tokio::test]
@@ -56,7 +56,7 @@ async fn mute_playlist_playback() {
         .await
         .expect("failed to change mute state.");
 
-    assert_eq!(command.is_success(), true);
+    assert!(command.is_success());
 }
 
 #[tokio::test]
@@ -76,7 +76,7 @@ async fn repeat_playlist_playback() {
         .await
         .expect("failed to change repeat state.");
 
-    assert_eq!(command.is_success(), true);
+    assert!(command.is_success());
 }
 
 #[tokio::test]
@@ -91,7 +91,7 @@ async fn shuffle_playlist_playback() {
         .await
         .expect("failed to change shuffle state.");
 
-    assert_eq!(command.is_success(), true);
+    assert!(command.is_success());
 }
 
 #[tokio::test]
@@ -103,5 +103,5 @@ async fn volume_playlist_playback() {
         .await
         .expect("failed to change playback volume.");
 
-    assert_eq!(command.is_success(), true);
+    assert!(command.is_success());
 }
