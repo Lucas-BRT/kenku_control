@@ -24,7 +24,7 @@ async fn get_playlists() {
     let controller = Controller::new(DEFAULT_IP.to_string(), DEFAULT_PORT);
     let playlist = controller.get_playlist().await;
 
-    assert_eq!(playlist.is_ok(), true);
+    assert!(playlist.is_ok());
 }
 
 #[tokio::test]
@@ -32,7 +32,7 @@ async fn get_soundboards() {
     let controller = Controller::new(DEFAULT_IP.to_string(), DEFAULT_PORT);
     let soundboard = controller.get_soundboard().await;
 
-    assert_eq!(soundboard.is_ok(), true);
+    assert!(soundboard.is_ok());
 }
 
 #[tokio::test]
@@ -40,7 +40,7 @@ async fn get_playlist_playback() {
     let controller = Controller::new(DEFAULT_IP.to_string(), DEFAULT_PORT);
     let playlist_playback = controller.get_playlist_playback().await;
 
-    assert_eq!(playlist_playback.is_ok(), true);
+    assert!(playlist_playback.is_ok());
 }
 
 #[tokio::test]
@@ -48,5 +48,5 @@ async fn get_soundboard_playback() {
     let controller = Controller::new(DEFAULT_IP.to_string(), DEFAULT_PORT);
     let soundboard_playback = controller.get_soundboard_playback().await;
 
-    assert_eq!(soundboard_playback.is_ok(), true);
+    assert!(soundboard_playback.is_ok());
 }
