@@ -2,7 +2,6 @@ use super::*;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use serde_with::skip_serializing_none;
 
 /// Represents the repeat mode for a playlist or track.
 ///
@@ -41,7 +40,7 @@ impl PlaylistGetResponse {
     ///
     /// This method returns a reference to the vector of `Playlist` in the `PlaylistGetResponse`.
     pub fn get_playlists(&self) -> &Vec<Playlist> {
-        return &self.playlists;
+        &self.playlists
     }
 }
 

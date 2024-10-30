@@ -6,7 +6,6 @@ use std::{
     net::{Ipv4Addr, SocketAddrV4},
     str::FromStr,
     time::Duration,
-    u16, u64,
 };
 use utils::*;
 
@@ -41,10 +40,10 @@ pub enum KenkuState {
 ///
 /// This function will panic if the client builder fails to build the client.
 fn build_client(milisseconds: u64) -> Client {
-    return Client::builder()
+    Client::builder()
         .timeout(Duration::from_millis(milisseconds))
         .build()
-        .unwrap();
+        .unwrap()
 }
 
 /// Represents a command to control the playback of a playlist.
@@ -310,7 +309,7 @@ mod kenku_commands {
         let url = process_url(&command, default_address);
         let expected_url = format!(
             "http://{}:{}/v1/soundboard",
-            default_address.ip().to_string(),
+            default_address.ip(),
             default_address.port()
         );
         assert_eq!(url, expected_url);
@@ -323,7 +322,7 @@ mod kenku_commands {
         let url = process_url(&command, default_address);
         let expected_url = format!(
             "http://{}:{}/v1/playlist",
-            default_address.ip().to_string(),
+            default_address.ip(),
             default_address.port()
         );
         assert_eq!(url, expected_url);
@@ -336,7 +335,7 @@ mod kenku_commands {
         let url = process_url(&command, default_address);
         let expected_url = format!(
             "http://{}:{}/v1/soundboard/playback",
-            default_address.ip().to_string(),
+            default_address.ip(),
             default_address.port()
         );
         assert_eq!(url, expected_url);
@@ -349,7 +348,7 @@ mod kenku_commands {
         let url = process_url(&command, default_address);
         let expected_url = format!(
             "http://{}:{}/v1/playlist/playback",
-            default_address.ip().to_string(),
+            default_address.ip(),
             default_address.port()
         );
         assert_eq!(url, expected_url);
@@ -362,7 +361,7 @@ mod kenku_commands {
         let url = process_url(&command, default_address);
         let expected_url = format!(
             "http://{}:{}/v1/playlist/play",
-            default_address.ip().to_string(),
+            default_address.ip(),
             default_address.port()
         );
         assert_eq!(url, expected_url);
@@ -375,7 +374,7 @@ mod kenku_commands {
         let url = process_url(&command, default_address);
         let expected_url = format!(
             "http://{}:{}/v1/playlist/playback/mute",
-            default_address.ip().to_string(),
+            default_address.ip(),
             default_address.port()
         );
         assert_eq!(url, expected_url);
@@ -388,7 +387,7 @@ mod kenku_commands {
         let url = process_url(&command, default_address);
         let expected_url = format!(
             "http://{}:{}/v1/playlist/playback/pause",
-            default_address.ip().to_string(),
+            default_address.ip(),
             default_address.port()
         );
         assert_eq!(url, expected_url);
@@ -401,7 +400,7 @@ mod kenku_commands {
         let url = process_url(&command, default_address);
         let expected_url = format!(
             "http://{}:{}/v1/playlist/playback/play",
-            default_address.ip().to_string(),
+            default_address.ip(),
             default_address.port()
         );
         assert_eq!(url, expected_url);
@@ -414,7 +413,7 @@ mod kenku_commands {
         let url = process_url(&command, default_address);
         let expected_url = format!(
             "http://{}:{}/v1/playlist/playback/repeat",
-            default_address.ip().to_string(),
+            default_address.ip(),
             default_address.port()
         );
         assert_eq!(url, expected_url);
@@ -427,7 +426,7 @@ mod kenku_commands {
         let url = process_url(&command, default_address);
         let expected_url = format!(
             "http://{}:{}/v1/playlist/playback/shuffle",
-            default_address.ip().to_string(),
+            default_address.ip(),
             default_address.port()
         );
         assert_eq!(url, expected_url);
@@ -440,7 +439,7 @@ mod kenku_commands {
         let url = process_url(&command, default_address);
         let expected_url = format!(
             "http://{}:{}/v1/playlist/playback/volume",
-            default_address.ip().to_string(),
+            default_address.ip(),
             default_address.port()
         );
         assert_eq!(url, expected_url);
@@ -453,7 +452,7 @@ mod kenku_commands {
         let url = process_url(&command, default_address);
         let expected_url = format!(
             "http://{}:{}/v1/soundboard/play",
-            default_address.ip().to_string(),
+            default_address.ip(),
             default_address.port()
         );
         assert_eq!(url, expected_url);
@@ -466,7 +465,7 @@ mod kenku_commands {
         let url = process_url(&command, default_address);
         let expected_url = format!(
             "http://{}:{}/v1/soundboard/stop",
-            default_address.ip().to_string(),
+            default_address.ip(),
             default_address.port()
         );
         assert_eq!(url, expected_url);
@@ -479,7 +478,7 @@ mod kenku_commands {
         let url = process_url(&command, default_address);
         let expected_url = format!(
             "http://{}:{}/v1/playlist/playback/next",
-            default_address.ip().to_string(),
+            default_address.ip(),
             default_address.port()
         );
         assert_eq!(url, expected_url);
@@ -492,7 +491,7 @@ mod kenku_commands {
         let url = process_url(&command, default_address);
         let expected_url = format!(
             "http://{}:{}/v1/playlist/playback/previous",
-            default_address.ip().to_string(),
+            default_address.ip(),
             default_address.port()
         );
         assert_eq!(url, expected_url);
