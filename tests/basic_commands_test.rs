@@ -4,9 +4,6 @@ use std::{
     str::FromStr,
 };
 
-const DEFAULT_IP: &str = "127.0.0.1";
-const DEFAULT_PORT: u16 = 3333;
-
 fn get_default_address() -> SocketAddrV4 {
     SocketAddrV4::new(Ipv4Addr::from_str("127.0.0.1").unwrap(), 3333)
 }
@@ -21,7 +18,7 @@ async fn kenku_remote_is_online() {
 
 #[tokio::test]
 async fn get_playlists() {
-    let controller = Controller::new(DEFAULT_IP.to_string(), DEFAULT_PORT);
+    let controller = Controller::default();
     let playlist = controller.get_playlist().await;
 
     assert!(playlist.is_ok());
@@ -29,7 +26,7 @@ async fn get_playlists() {
 
 #[tokio::test]
 async fn get_soundboards() {
-    let controller = Controller::new(DEFAULT_IP.to_string(), DEFAULT_PORT);
+    let controller = Controller::default();
     let soundboard = controller.get_soundboard().await;
 
     assert!(soundboard.is_ok());
@@ -37,7 +34,7 @@ async fn get_soundboards() {
 
 #[tokio::test]
 async fn get_playlist_playback() {
-    let controller = Controller::new(DEFAULT_IP.to_string(), DEFAULT_PORT);
+    let controller = Controller::default();
     let playlist_playback = controller.get_playlist_playback().await;
 
     assert!(playlist_playback.is_ok());
@@ -45,7 +42,7 @@ async fn get_playlist_playback() {
 
 #[tokio::test]
 async fn get_soundboard_playback() {
-    let controller = Controller::new(DEFAULT_IP.to_string(), DEFAULT_PORT);
+    let controller = Controller::default();
     let soundboard_playback = controller.get_soundboard_playback().await;
 
     assert!(soundboard_playback.is_ok());

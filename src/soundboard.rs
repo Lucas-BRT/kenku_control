@@ -1,7 +1,7 @@
 /// all the content of Soundboard of Kenku FM
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
+use serde_json::{json, Value};
 
 use super::*;
 
@@ -95,20 +95,19 @@ impl Sounds {
     /// # Returns
     ///
     /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-    pub async fn play(&self, controller: &Controller) -> Result<StatusCode, reqwest::Error> {
+    pub async fn play<T>(
+        &self,
+        controller: &Controller<T>,
+    ) -> Result<Value, Box<dyn Error + Send + Sync>>
+    where
+        T: HttpClient,
+    {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::SoundboardPlay);
 
         let url = process_url(command, controller.address);
         let json = json!({"id": self.id});
 
-        let response = controller
-            .client
-            .put(url)
-            .header("Content-Type", "application/json")
-            .json(&json)
-            .send()
-            .await?
-            .status();
+        let response = controller.client.put(&url, &json).await?;
 
         Ok(response)
     }
@@ -125,20 +124,19 @@ impl Sounds {
     /// # Returns
     ///
     /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-    pub async fn stop(&self, controller: &Controller) -> Result<StatusCode, reqwest::Error> {
+    pub async fn stop<T>(
+        &self,
+        controller: &Controller<T>,
+    ) -> Result<Value, Box<dyn Error + Send + Sync>>
+    where
+        T: HttpClient,
+    {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::SoundboardStop);
 
         let url = process_url(command, controller.address);
         let json = json!({"id": self.id});
 
-        let response = controller
-            .client
-            .put(url)
-            .header("Content-Type", "application/json")
-            .json(&json)
-            .send()
-            .await?
-            .status();
+        let response = controller.client.put(&url, &json).await?;
 
         Ok(response)
     }

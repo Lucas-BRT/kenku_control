@@ -3,12 +3,16 @@
 //! `Kenku Control` is a API to manage your Kenku FM using Rust.
 use reqwest::{self, Client};
 use std::{
+    error::Error,
     net::{Ipv4Addr, SocketAddrV4},
     str::FromStr,
     time::Duration,
 };
 use utils::*;
 
+use crate::client::{HttpClient, ReqwestClient};
+
+pub mod client;
 pub mod playlist;
 pub mod soundboard;
 pub mod utils;
@@ -52,14 +56,14 @@ fn build_client(milisseconds: u64) -> Client {
 /// The `PlaylistPlaybackMute`, `PlaylistPlaybackVolume`, `PlaylistPlaybackShuffle`, and `PlaylistPlaybackRepeat` variants carry additional data.
 #[derive(Debug)]
 pub enum KenkuPlaybackCommand {
-    PlaylistPlaybackPlay,
-    PlaylistPlaybackPause,
-    PlaylistPlaybackNext,
-    PlaylistPlaybackPrevious,
-    PlaylistPlaybackMute(bool),
-    PlaylistPlaybackVolume(f64),
-    PlaylistPlaybackShuffle(bool),
-    PlaylistPlaybackRepeat(playlist::Repeat),
+    Play,
+    Pause,
+    Next,
+    Previous,
+    Mute(bool),
+    Volume(f64),
+    Shuffle(bool),
+    Repeat(playlist::Repeat),
 }
 
 /// Represents a command to be sent to the Kenku server.
@@ -149,16 +153,29 @@ pub enum KenkuResponse {
 /// * `port` - A string representing the port number of the server.
 /// * `kenku_remote_state` - A `KenkuState` representing the current state of the server.
 #[derive(Debug)]
-pub struct Controller {
-    pub client: Client,
+pub struct Controller<T: HttpClient> {
+    pub client: T,
     pub address: SocketAddrV4,
     pub kenku_remote_state: KenkuState,
+}
+
+impl Default for Controller<ReqwestClient> {
+    fn default() -> Self {
+        let client = ReqwestClient::new();
+        let address = SocketAddrV4::new(Ipv4Addr::LOCALHOST, 8080);
+        let kenku_remote_state = KenkuState::Offline;
+        Controller {
+            client,
+            address,
+            kenku_remote_state,
+        }
+    }
 }
 
 /// Provides methods for `Controller`.
 ///
 /// This implementation provides a method for creating a new `Controller`.
-impl Controller {
+impl<T: HttpClient> Controller<T> {
     /// Creates a new `Controller`.
     ///
     /// This function takes an IP address and a port, builds a new HTTP client with a timeout of 20 milliseconds, and returns a new `Controller` with the client, IP address, port, and an initial server state of `KenkuState::Offline`.
@@ -171,8 +188,8 @@ impl Controller {
     /// # Returns
     ///
     /// This function returns a new `Controller` with the specified IP address, port, and an initial server state of `KenkuState::Offline`.
-    pub fn new(ip: String, port: u16) -> Controller {
-        let client = build_client(100);
+    pub fn new(ip: String, port: u16) -> Controller<ReqwestClient> {
+        let client = ReqwestClient::new();
         let ip = Ipv4Addr::from_str(ip.as_str()).expect("failed to convert String ip to Ipv4Addr.");
         let address = SocketAddrV4::new(ip, port);
 
@@ -183,11 +200,9 @@ impl Controller {
         }
     }
 
-    pub fn from_ipv4(address: SocketAddrV4) -> Controller {
-        let client = build_client(100);
-
+    pub fn from_ipv4(address: SocketAddrV4) -> Controller<ReqwestClient> {
         Controller {
-            client,
+            client: ReqwestClient::new(),
             address,
             kenku_remote_state: KenkuState::Offline,
         }
@@ -202,7 +217,7 @@ impl Controller {
     /// A `Result` which is either a `SoundboardGetResponse` or a `reqwest::Error`.
     pub async fn get_soundboard(
         &self,
-    ) -> Result<soundboard::SoundboardGetResponse, reqwest::Error> {
+    ) -> Result<soundboard::SoundboardGetResponse, Box<dyn Error + Send + Sync>> {
         let url = process_url(
             &KenkuCommand::KenkuGet(KenkuGetCommand::Soundboard),
             self.address,
@@ -210,10 +225,7 @@ impl Controller {
 
         let response = self
             .client
-            .get(url)
-            .send()
-            .await?
-            .json::<soundboard::SoundboardGetResponse>()
+            .get::<soundboard::SoundboardGetResponse>(&url)
             .await?;
 
         Ok(response)
@@ -228,17 +240,14 @@ impl Controller {
     /// A `Result` which is either a `SoundboardPlaybackResponse` or a `reqwest::Error`.
     pub async fn get_soundboard_playback(
         &self,
-    ) -> Result<soundboard::SoundboardPlaybackResponse, reqwest::Error> {
+    ) -> Result<soundboard::SoundboardPlaybackResponse, Box<dyn Error + Send + Sync>> {
         let url = process_url(
             &KenkuCommand::KenkuGet(KenkuGetCommand::SoundboardPlayback),
             self.address,
         );
         let response = self
             .client
-            .get(url)
-            .send()
-            .await?
-            .json::<soundboard::SoundboardPlaybackResponse>()
+            .get::<soundboard::SoundboardPlaybackResponse>(&url)
             .await?;
         Ok(response)
     }
@@ -250,17 +259,16 @@ impl Controller {
     /// # Returns
     ///
     /// A `Result` which is either a `PlaylistGetResponse` or a `reqwest::Error`.
-    pub async fn get_playlist(&self) -> Result<playlist::PlaylistGetResponse, reqwest::Error> {
+    pub async fn get_playlist(
+        &self,
+    ) -> Result<playlist::PlaylistGetResponse, Box<dyn Error + Sync + Send>> {
         let url = process_url(
             &KenkuCommand::KenkuGet(KenkuGetCommand::Playlist),
             self.address,
         );
         let response = self
             .client
-            .get(url)
-            .send()
-            .await?
-            .json::<playlist::PlaylistGetResponse>()
+            .get::<playlist::PlaylistGetResponse>(&url)
             .await?;
         Ok(response)
     }
@@ -274,17 +282,14 @@ impl Controller {
     /// A `Result` which is either a `PlaylistPlaybackResponse` or a `reqwest::Error`.
     pub async fn get_playlist_playback(
         &self,
-    ) -> Result<playlist::PlaylistPlaybackResponse, reqwest::Error> {
+    ) -> Result<playlist::PlaylistPlaybackResponse, Box<dyn Error + Sync + Send>> {
         let url = process_url(
             &KenkuCommand::KenkuGet(KenkuGetCommand::PlaylistPlayback),
             self.address,
         );
         let response = self
             .client
-            .get(url)
-            .send()
-            .await?
-            .json::<playlist::PlaylistPlaybackResponse>()
+            .get::<playlist::PlaylistPlaybackResponse>(&url)
             .await?;
         Ok(response)
     }
