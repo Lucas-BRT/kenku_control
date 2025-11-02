@@ -133,9 +133,9 @@ impl Track {
         let url = process_url(command, controller.address);
         let json = json!({"id": self.id});
 
-        let response = controller.client.put(&url, &json).await?;
+        controller.client.put::<()>(&url, &json).await?;
 
-        Ok(response)
+        Ok(())
     }
 }
 
@@ -261,7 +261,7 @@ pub mod playback {
     /// # Returns
     ///
     /// This function returns a `Result` that contains a `StatusCode`, if the request was sent successfully, or a `reqwest::Error`, if the request failed.
-    pub async fn playback_mute<T: HttpClient>(
+    pub async fn playback_mute<T>(
         controller: &Controller<T>,
         mute: bool,
     ) -> Result<Value, Box<dyn Error + Send + Sync>>

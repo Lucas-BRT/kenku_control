@@ -1,21 +1,23 @@
 //! # Kenku Control
 //!
 //! `Kenku Control` is a API to manage your Kenku FM using Rust.
-use reqwest::{self, Client};
+use crate::client::{HttpClient, ReqwestClient};
 use std::{
     error::Error,
     net::{Ipv4Addr, SocketAddrV4},
     str::FromStr,
-    time::Duration,
 };
 use utils::*;
-
-use crate::client::{HttpClient, ReqwestClient};
 
 pub mod client;
 pub mod playlist;
 pub mod soundboard;
 pub mod utils;
+
+pub const DEFAULT_KENKU_REMOTE_PORT: u16 = 3333;
+pub const DEFAULT_KENKU_REMOTE_IP: Ipv4Addr = Ipv4Addr::new(127, 0, 0, 1);
+pub const DEFAULT_KENKU_REMOTE_ADDRESS: SocketAddrV4 =
+    SocketAddrV4::new(DEFAULT_KENKU_REMOTE_IP, DEFAULT_KENKU_REMOTE_PORT);
 
 /// Represents the state of the Kenku server.
 ///
@@ -26,28 +28,6 @@ pub mod utils;
 pub enum KenkuState {
     Online,
     Offline,
-}
-
-/// Builds a new HTTP client with a specified timeout.
-///
-/// This function takes a timeout duration in milliseconds and returns a `reqwest::Client` with that timeout.
-///
-/// # Arguments
-///
-/// * `milisseconds` - The timeout duration in milliseconds.
-///
-/// # Returns
-///
-/// This function returns a `reqwest::Client` with the specified timeout.
-///
-/// # Panics
-///
-/// This function will panic if the client builder fails to build the client.
-fn build_client(milisseconds: u64) -> Client {
-    Client::builder()
-        .timeout(Duration::from_millis(milisseconds))
-        .build()
-        .unwrap()
 }
 
 /// Represents a command to control the playback of a playlist.
@@ -154,9 +134,9 @@ pub enum KenkuResponse {
 /// * `kenku_remote_state` - A `KenkuState` representing the current state of the server.
 #[derive(Debug)]
 pub struct Controller<T: HttpClient> {
-    pub client: T,
-    pub address: SocketAddrV4,
-    pub kenku_remote_state: KenkuState,
+    client: T,
+    address: SocketAddrV4,
+    kenku_remote_state: KenkuState,
 }
 
 impl Default for Controller<ReqwestClient> {
@@ -200,6 +180,17 @@ impl<T: HttpClient> Controller<T> {
         }
     }
 
+    pub fn from_client(client: T, address: SocketAddrV4) -> Controller<T> {
+        Controller {
+            client,
+            address,
+            kenku_remote_state: KenkuState::Offline,
+        }
+    }
+
+    /// Creates a new `Controller` with the specified IP address and port.
+    ///
+    /// This function takes an IP address and a port, builds a new HTTP client with a timeout of 20 milliseconds, and returns a new `Controller` with the client, IP address, port, and an initial server state of `KenkuState::Offline`.
     pub fn from_ipv4(address: SocketAddrV4) -> Controller<ReqwestClient> {
         Controller {
             client: ReqwestClient::new(),

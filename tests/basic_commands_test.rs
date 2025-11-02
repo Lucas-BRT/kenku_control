@@ -1,16 +1,8 @@
-use kenku_control::{utils::check_kenku_server_state, *};
-use std::{
-    net::{Ipv4Addr, SocketAddrV4},
-    str::FromStr,
-};
-
-fn get_default_address() -> SocketAddrV4 {
-    SocketAddrV4::new(Ipv4Addr::from_str("127.0.0.1").unwrap(), 3333)
-}
+use kenku_control::{client::MockHttpClient, utils::check_kenku_server_state, *};
 
 #[tokio::test]
 async fn kenku_remote_is_online() {
-    let default_address = get_default_address();
+    let default_address = DEFAULT_KENKU_REMOTE_ADDRESS;
     let server_state = check_kenku_server_state(default_address).await;
 
     assert_eq!(server_state, KenkuState::Online);
@@ -18,7 +10,8 @@ async fn kenku_remote_is_online() {
 
 #[tokio::test]
 async fn get_playlists() {
-    let controller = Controller::default();
+    let client = MockHttpClient::new();
+    let controller = Controller::from_client(client, DEFAULT_KENKU_REMOTE_ADDRESS);
     let playlist = controller.get_playlist().await;
 
     assert!(playlist.is_ok());
@@ -26,7 +19,8 @@ async fn get_playlists() {
 
 #[tokio::test]
 async fn get_soundboards() {
-    let controller = Controller::default();
+    let client = MockHttpClient::new();
+    let controller = Controller::from_client(client, DEFAULT_KENKU_REMOTE_ADDRESS);
     let soundboard = controller.get_soundboard().await;
 
     assert!(soundboard.is_ok());
@@ -34,7 +28,8 @@ async fn get_soundboards() {
 
 #[tokio::test]
 async fn get_playlist_playback() {
-    let controller = Controller::default();
+    let client = MockHttpClient::new();
+    let controller = Controller::from_client(client, DEFAULT_KENKU_REMOTE_ADDRESS);
     let playlist_playback = controller.get_playlist_playback().await;
 
     assert!(playlist_playback.is_ok());
@@ -42,7 +37,8 @@ async fn get_playlist_playback() {
 
 #[tokio::test]
 async fn get_soundboard_playback() {
-    let controller = Controller::default();
+    let client = MockHttpClient::new();
+    let controller = Controller::from_client(client, DEFAULT_KENKU_REMOTE_ADDRESS);
     let soundboard_playback = controller.get_soundboard_playback().await;
 
     assert!(soundboard_playback.is_ok());

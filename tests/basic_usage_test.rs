@@ -1,9 +1,11 @@
-use kenku_control::*;
+use kenku_control::{client::MockHttpClient, *};
 use rand::Rng;
 
 #[tokio::test]
 async fn play_a_random_track() {
-    let controller = Controller::default();
+    let client = MockHttpClient::new();
+    let controller = Controller::from_client(client, DEFAULT_KENKU_REMOTE_ADDRESS);
+
     let playlists = controller
         .get_playlist()
         .await
@@ -14,13 +16,14 @@ async fn play_a_random_track() {
         let index = rand::thread_rng().gen_range(0..tracks.len());
         let track = &tracks[index];
 
-        let status_code = track.play(&controller).await;
+        track.play(&controller).await.expect("failed to play track");
     }
 }
 
 #[tokio::test]
-async fn play_a_random_sond() {
-    let controller = Controller::default();
+async fn play_a_random_sound() {
+    let client = MockHttpClient::new();
+    let controller = Controller::from_client(client, DEFAULT_KENKU_REMOTE_ADDRESS);
     let soundboards = controller
         .get_soundboard()
         .await
@@ -31,6 +34,6 @@ async fn play_a_random_sond() {
         let index = rand::thread_rng().gen_range(0..sounds.len());
         let sound = &sounds[index];
 
-        let status_code = sound.play(&controller).await.unwrap();
+        sound.play(&controller).await.expect("failed to play sound");
     }
 }

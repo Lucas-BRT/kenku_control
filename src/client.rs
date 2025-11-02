@@ -29,6 +29,12 @@ impl ReqwestClient {
     }
 }
 
+impl Default for ReqwestClient {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl From<Client> for ReqwestClient {
     fn from(value: Client) -> Self {
         Self(value)

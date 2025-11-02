@@ -1,5 +1,4 @@
 /// all the content of Soundboard of Kenku FM
-use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
