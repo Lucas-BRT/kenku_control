@@ -1,13 +1,18 @@
 use async_trait::async_trait;
 use mockall::automock;
-use reqwest::Client;
+use reqwest::{Client, Url};
 use serde::de::DeserializeOwned;
 use serde_json::Value;
-use std::error::Error;
+use std::{error::Error, time::Duration};
+
+use crate::DEFAULT_KENKU_REMOTE_ADDRESS;
+
+pub const DEFAULT_TIMEOUT: Duration = Duration::from_secs(10);
 
 #[automock]
 #[async_trait]
 pub trait HttpClient {
+    async fn ping(&self) -> Result<(), Box<dyn Error + Send + Sync>>;
     async fn get<T>(&self, url: &str) -> Result<T, Box<dyn Error + Send + Sync>>
     where
         T: DeserializeOwned + Send + 'static;
@@ -43,6 +48,13 @@ impl From<Client> for ReqwestClient {
 
 #[async_trait]
 impl HttpClient for ReqwestClient {
+    async fn ping(&self) -> Result<(), Box<dyn Error + Send + Sync>> {
+        let url = Url::parse(&DEFAULT_KENKU_REMOTE_ADDRESS.to_string())?;
+        println!("Pinging {}", url);
+        self.0.get(url).timeout(DEFAULT_TIMEOUT).send().await?;
+        Ok(())
+    }
+
     async fn get<T>(&self, url: &str) -> Result<T, Box<dyn Error + Send + Sync>>
     where
         T: DeserializeOwned + Send + 'static,

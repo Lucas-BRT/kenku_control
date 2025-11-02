@@ -9,13 +9,14 @@ use serde_json::json;
 /// * `Track`: Represents that the current track should be repeated.
 /// * `Playlist`: Represents that the entire playlist should be repeated.
 /// * `Off`: Represents that no repeat mode is active.
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, Default)]
 pub enum Repeat {
     #[serde(rename = "track")]
     Track,
     #[serde(rename = "playlist")]
     Playlist,
     #[serde(rename = "off")]
+    #[default]
     Off,
 }
 
@@ -27,7 +28,7 @@ pub enum Repeat {
 ///
 /// * `playlists` - A vector of `Playlist` representing the playlists in the response.
 /// * `tracks` - A vector of `Track` representing the tracks in the response.
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, Default)]
 pub struct PlaylistGetResponse {
     pub playlists: Vec<Playlist>,
     pub tracks: Vec<Track>,
@@ -58,7 +59,7 @@ impl PlaylistGetResponse {
 /// * `tracks` - An optional vector of `Track` representing the current tracks in the playlist.
 /// * `playlist` - An optional `Playlist` representing the current playlist.
 #[serde_with::skip_serializing_none]
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, Default)]
 pub struct PlaylistPlaybackResponse {
     pub playing: bool,
     pub volume: f64,

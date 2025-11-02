@@ -1,16 +1,31 @@
-use kenku_control::{client::MockHttpClient, utils::check_kenku_server_state, *};
+use kenku_control::{
+    client::MockHttpClient,
+    playlist::{PlaylistGetResponse, PlaylistPlaybackResponse},
+    soundboard::{SoundboardGetResponse, SoundboardPlaybackResponse},
+    *,
+};
+use mockall::predicate::eq;
 
 #[tokio::test]
 async fn kenku_remote_is_online() {
-    let default_address = DEFAULT_KENKU_REMOTE_ADDRESS;
-    let server_state = check_kenku_server_state(default_address).await;
+    let mut client = MockHttpClient::new();
+    client.expect_ping().times(1).returning(|| Ok(()));
 
-    assert_eq!(server_state, KenkuState::Online);
+    let mut controller = Controller::from_client(client, DEFAULT_KENKU_REMOTE_ADDRESS);
+    controller.check_server().await;
+
+    assert!(controller.server_state() == KenkuState::Online);
 }
 
 #[tokio::test]
 async fn get_playlists() {
-    let client = MockHttpClient::new();
+    let mut client = MockHttpClient::new();
+    client
+        .expect_get::<PlaylistGetResponse>()
+        .with(eq("http://127.0.0.1:3333/v1/playlist"))
+        .times(1)
+        .returning(|_| Ok(PlaylistGetResponse::default()));
+
     let controller = Controller::from_client(client, DEFAULT_KENKU_REMOTE_ADDRESS);
     let playlist = controller.get_playlist().await;
 
@@ -19,7 +34,13 @@ async fn get_playlists() {
 
 #[tokio::test]
 async fn get_soundboards() {
-    let client = MockHttpClient::new();
+    let mut client = MockHttpClient::new();
+    client
+        .expect_get::<SoundboardGetResponse>()
+        .with(eq("http://127.0.0.1:3333/v1/soundboard"))
+        .times(1)
+        .returning(|_| Ok(SoundboardGetResponse::default()));
+
     let controller = Controller::from_client(client, DEFAULT_KENKU_REMOTE_ADDRESS);
     let soundboard = controller.get_soundboard().await;
 
@@ -28,7 +49,13 @@ async fn get_soundboards() {
 
 #[tokio::test]
 async fn get_playlist_playback() {
-    let client = MockHttpClient::new();
+    let mut client = MockHttpClient::new();
+    client
+        .expect_get::<PlaylistPlaybackResponse>()
+        .with(eq("http://127.0.0.1:3333/v1/playlist/playback"))
+        .times(1)
+        .returning(|_| Ok(PlaylistPlaybackResponse::default()));
+
     let controller = Controller::from_client(client, DEFAULT_KENKU_REMOTE_ADDRESS);
     let playlist_playback = controller.get_playlist_playback().await;
 
@@ -37,7 +64,14 @@ async fn get_playlist_playback() {
 
 #[tokio::test]
 async fn get_soundboard_playback() {
-    let client = MockHttpClient::new();
+    let mut client = MockHttpClient::new();
+
+    client
+        .expect_get()
+        .with(eq("http://127.0.0.1:3333/v1/soundboard/playback"))
+        .times(1)
+        .returning(|_| Ok(SoundboardPlaybackResponse::default()));
+
     let controller = Controller::from_client(client, DEFAULT_KENKU_REMOTE_ADDRESS);
     let soundboard_playback = controller.get_soundboard_playback().await;
 

@@ -12,7 +12,7 @@ use super::*;
 ///
 /// * `soundboards` - A vector of `Soundboards` representing the soundboards in the response.
 /// * `sounds` - A vector of `Sounds` representing the sounds in the response.
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, Default)]
 pub struct SoundboardGetResponse {
     pub soundboards: Vec<Soundboards>,
     pub sounds: Vec<Sounds>,
@@ -25,7 +25,7 @@ pub struct SoundboardGetResponse {
 /// # Fields
 ///
 /// * `sounds` - A vector of `Sounds` representing the sounds in the response.
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, Default)]
 pub struct SoundboardPlaybackResponse {
     sounds: Vec<Sounds>,
 }

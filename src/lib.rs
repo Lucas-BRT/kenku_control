@@ -24,7 +24,7 @@ pub const DEFAULT_KENKU_REMOTE_ADDRESS: SocketAddrV4 =
 /// This enum has two variants:
 /// * `Online`: Represents that the Kenku server is online and reachable.
 /// * `Offline`: Represents that the Kenku server is offline or not reachable.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum KenkuState {
     Online,
     Offline,
@@ -180,6 +180,9 @@ impl<T: HttpClient> Controller<T> {
         }
     }
 
+    /// Creates a new `Controller` with the specified client and address.
+    ///
+    /// This function takes a client and an address, and returns a new `Controller` with the client, address, and an initial server state of `KenkuState::Offline`.
     pub fn from_client(client: T, address: SocketAddrV4) -> Controller<T> {
         Controller {
             client,
@@ -197,6 +200,20 @@ impl<T: HttpClient> Controller<T> {
             address,
             kenku_remote_state: KenkuState::Offline,
         }
+    }
+
+    /// Checks the server status of this [`Controller<T>`].
+    ///
+    /// This function sends a ping request to the server and updates the server state accordingly.
+    pub async fn check_server(&mut self) {
+        match self.client.ping().await {
+            Ok(_) => self.kenku_remote_state = KenkuState::Online,
+            Err(_) => self.kenku_remote_state = KenkuState::Offline,
+        }
+    }
+
+    pub fn server_state(&self) -> KenkuState {
+        self.kenku_remote_state
     }
 
     /// Sends a GET request to the soundboard API and returns a `SoundboardGetResponse`.
