@@ -97,7 +97,7 @@ impl Sounds {
     pub async fn play<T>(
         &self,
         controller: &Controller<T>,
-    ) -> Result<Value, Box<dyn Error + Send + Sync>>
+    ) -> Result<(), Box<dyn Error + Send + Sync>>
     where
         T: HttpClient,
     {
@@ -106,9 +106,9 @@ impl Sounds {
         let url = process_url(command, controller.address);
         let json = json!({"id": self.id});
 
-        let response = controller.client.put(&url, &json).await?;
+        controller.client.put::<()>(&url, &json).await?;
 
-        Ok(response)
+        Ok(())
     }
 
     /// Sends a request to the Kenku server to stop a specific sound in the soundboard.
