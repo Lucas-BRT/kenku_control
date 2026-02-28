@@ -1,5 +1,5 @@
 use kenku_control::{playlist::playback, *};
-use rand::prelude::*;
+use rand::random_range;
 
 const DEFAULT_IP_ADDRESS: &str = "127.0.0.1";
 const DEFAULT_PORT: u16 = 3333;
@@ -97,8 +97,7 @@ async fn shuffle_playlist_playback() {
 #[tokio::test]
 async fn volume_playlist_playback() {
     let controller = Controller::new(DEFAULT_IP_ADDRESS.to_string(), DEFAULT_PORT);
-    let mut rng = rand::thread_rng();
-    let volume: f64 = rng.gen_range(0..=10) as f64 / 10.0;
+    let volume: f64 = random_range(0..=10) as f64 / 10.0;
     let command = playback::playback_volume(&controller, volume)
         .await
         .expect("failed to change playback volume.");

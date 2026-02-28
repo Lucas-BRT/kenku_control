@@ -1,5 +1,4 @@
 use kenku_control::*;
-use rand::Rng;
 
 const DEFAULT_IP_ADDRESS: &str = "127.0.0.1";
 const DEFAULT_PORT: u16 = 3333;
@@ -14,7 +13,7 @@ async fn play_a_random_track() {
     let playlist_tracks = Some(playlists.tracks);
 
     if let Some(tracks) = playlist_tracks {
-        let index = rand::thread_rng().gen_range(0..tracks.len());
+        let index = rand::random_range(0..tracks.len());
         let track = &tracks[index];
 
         let status_code = track.play(&controller).await.unwrap();
@@ -32,7 +31,7 @@ async fn play_a_random_sond() {
     let soundboards_sounds = Some(soundboards.sounds);
 
     if let Some(sounds) = soundboards_sounds {
-        let index = rand::thread_rng().gen_range(0..sounds.len());
+        let index = rand::random_range(0..sounds.len());
         let sound = &sounds[index];
 
         let status_code = sound.play(&controller).await.unwrap();

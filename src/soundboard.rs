@@ -41,10 +41,10 @@ pub struct SoundboardPlaybackResponse {
 /// * `sounds` - A vector of strings representing the sounds in the soundboard.
 /// * `background` - A string representing the background of the soundboard.
 /// * `title` - The title of the soundboard.
-#[serde_with::skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Soundboards {
     pub id: String,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub sounds: Vec<String>,
     pub background: String,
     pub title: String,
@@ -65,7 +65,6 @@ pub struct Soundboards {
 /// * `fade_out` - The duration of the fade-out effect at the end of the sound, in milliseconds.
 /// * `duration` - The total duration of the sound, in milliseconds. This is an optional field and only is need in playback response.
 /// * `progress` - The current progress of the sound, starts in 0 and go to duration. This is an optional field and only is need in playback response.
-#[serde_with::skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Sounds {
     pub id: String,
@@ -78,7 +77,9 @@ pub struct Sounds {
     pub fade_in: u32,
     #[serde(rename = "fadeOut")]
     pub fade_out: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub duration: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub progress: Option<f64>,
 }
 

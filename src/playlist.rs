@@ -57,7 +57,6 @@ impl PlaylistGetResponse {
 /// * `repeat` - The current repeat mode, represented as a `Repeat` enum.
 /// * `tracks` - An optional vector of `Track` representing the current tracks in the playlist.
 /// * `playlist` - An optional `Playlist` representing the current playlist.
-#[serde_with::skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct PlaylistPlaybackResponse {
     pub playing: bool,
@@ -65,7 +64,9 @@ pub struct PlaylistPlaybackResponse {
     pub muted: bool,
     pub shuffle: bool,
     pub repeat: Repeat,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub track: Option<Track>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub playlist: Option<Playlist>,
 }
 
@@ -79,7 +80,6 @@ pub struct PlaylistPlaybackResponse {
 /// * `tracks` - An optional vector of strings representing the tracks in the playlist.
 /// * `background` - An optional string representing the background of the playlist.
 /// * `title` - The title of the playlist.
-#[serde_with::skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Playlist {
     pub id: String,
@@ -99,13 +99,14 @@ pub struct Playlist {
 /// * `title` - The title of the track.
 /// * `duration` - The total duration of the track, in milliseconds. This is an optional field.
 /// * `progress` - The current progress of the track, in milliseconds. This is an optional field.
-#[serde_with::skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Track {
     pub id: String,
     pub url: String,
     pub title: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub duration: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub progress: Option<u32>,
 }
 
