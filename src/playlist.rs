@@ -9,13 +9,14 @@ use serde_json::json;
 /// * `Track`: Represents that the current track should be repeated.
 /// * `Playlist`: Represents that the entire playlist should be repeated.
 /// * `Off`: Represents that no repeat mode is active.
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, Default)]
 pub enum Repeat {
     #[serde(rename = "track")]
     Track,
     #[serde(rename = "playlist")]
     Playlist,
     #[serde(rename = "off")]
+    #[default]
     Off,
 }
 
@@ -27,7 +28,7 @@ pub enum Repeat {
 ///
 /// * `playlists` - A vector of `Playlist` representing the playlists in the response.
 /// * `tracks` - A vector of `Track` representing the tracks in the response.
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, Default)]
 pub struct PlaylistGetResponse {
     pub playlists: Vec<Playlist>,
     pub tracks: Vec<Track>,
@@ -57,7 +58,7 @@ impl PlaylistGetResponse {
 /// * `repeat` - The current repeat mode, represented as a `Repeat` enum.
 /// * `tracks` - An optional vector of `Track` representing the current tracks in the playlist.
 /// * `playlist` - An optional `Playlist` representing the current playlist.
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, Default)]
 pub struct PlaylistPlaybackResponse {
     pub playing: bool,
     pub volume: f64,
@@ -123,21 +124,20 @@ impl Track {
     /// # Returns
     ///
     /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-    pub async fn play(&self, controller: &Controller) -> Result<StatusCode, reqwest::Error> {
+    pub async fn play<T>(
+        &self,
+        controller: &Controller<T>,
+    ) -> Result<(), Box<dyn Error + Sync + Send>>
+    where
+        T: HttpClient,
+    {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlay);
         let url = process_url(command, controller.address);
         let json = json!({"id": self.id});
 
-        let response = controller
-            .client
-            .put(url)
-            .header("Content-Type", "application/json")
-            .json(&json)
-            .send()
-            .await?
-            .status();
+        controller.client.put::<()>(&url, &json).await?;
 
-        Ok(response)
+        Ok(())
     }
 }
 
@@ -148,6 +148,9 @@ pub mod playback {
         json, playlist, process_url, Controller, KenkuCommand, KenkuPostCommand, KenkuPutCommand,
         StatusCode,
     };
+    use crate::client::HttpClient;
+    use serde_json::Value;
+    use std::error::Error;
 
     /// Sends a request to the Kenku server to play the current track in the playlist.
     ///
@@ -160,10 +163,15 @@ pub mod playback {
     /// # Returns
     ///
     /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-    pub async fn playback_play(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
+    pub async fn playback_play<T>(
+        controller: &Controller<T>,
+    ) -> Result<Value, Box<dyn Error + Send + Sync>>
+    where
+        T: HttpClient,
+    {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPlay);
         let url = process_url(command, controller.address);
-        let response = controller.client.put(url).send().await?.status();
+        let response = controller.client.put(&url, &json!({})).await?;
 
         Ok(response)
     }
@@ -179,10 +187,15 @@ pub mod playback {
     /// # Returns
     ///
     /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-    pub async fn playback_pause(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
+    pub async fn playback_pause<T>(
+        controller: &Controller<T>,
+    ) -> Result<Value, Box<dyn Error + Send + Sync>>
+    where
+        T: HttpClient,
+    {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackPause);
         let url = process_url(command, controller.address);
-        let response = controller.client.put(url).send().await?.status();
+        let response = controller.client.put(&url, &json!({})).await?;
 
         Ok(response)
     }
@@ -198,10 +211,15 @@ pub mod playback {
     /// # Returns
     ///
     /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-    pub async fn playback_next(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
+    pub async fn playback_next<T>(
+        controller: &Controller<T>,
+    ) -> Result<Value, Box<dyn Error + Send + Sync>>
+    where
+        T: HttpClient,
+    {
         let command = &KenkuCommand::KenkuPost(KenkuPostCommand::PlaylistPlaybackNext);
         let url = process_url(command, controller.address);
-        let response = controller.client.post(url).send().await?.status();
+        let response = controller.client.post(&url, &json!({})).await?;
 
         Ok(response)
     }
@@ -217,10 +235,15 @@ pub mod playback {
     /// # Returns
     ///
     /// This function returns a `Result` that contains a `StatusCode` if the request was sent successfully, or a `reqwest::Error` if the request failed.
-    pub async fn playback_previous(controller: &Controller) -> Result<StatusCode, reqwest::Error> {
+    pub async fn playback_previous<T>(
+        controller: &Controller<T>,
+    ) -> Result<Value, Box<dyn Error + Send + Sync>>
+    where
+        T: HttpClient,
+    {
         let command = &KenkuCommand::KenkuPost(KenkuPostCommand::PlaylistPlaybackPrevious);
         let url = process_url(command, controller.address);
-        let response = controller.client.post(url).send().await?.status();
+        let response = controller.client.post(&url, &json!({})).await?;
 
         Ok(response)
     }
@@ -237,22 +260,18 @@ pub mod playback {
     /// # Returns
     ///
     /// This function returns a `Result` that contains a `StatusCode`, if the request was sent successfully, or a `reqwest::Error`, if the request failed.
-    pub async fn playback_mute(
-        controller: &Controller,
+    pub async fn playback_mute<T>(
+        controller: &Controller<T>,
         mute: bool,
-    ) -> Result<StatusCode, reqwest::Error> {
+    ) -> Result<Value, Box<dyn Error + Send + Sync>>
+    where
+        T: HttpClient,
+    {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackMute);
         let url = process_url(command, controller.address);
         let json = json!({"mute": mute});
 
-        let response = controller
-            .client
-            .put(url)
-            .header("content-type", "application/json")
-            .json(&json)
-            .send()
-            .await?
-            .status();
+        let response = controller.client.put(&url, &json!({})).await?;
 
         Ok(response)
     }
@@ -270,22 +289,18 @@ pub mod playback {
     /// # Returns
     ///
     /// This function returns a `Result` with a `StatusCode`. If the PUT request is successful, it returns `Ok(StatusCode)`. If the PUT request fails, it returns `Err(reqwest::Error)`.
-    pub async fn playback_volume(
-        controller: &Controller,
+    pub async fn playback_volume<T>(
+        controller: &Controller<T>,
         volume: f64,
-    ) -> Result<StatusCode, reqwest::Error> {
+    ) -> Result<Value, Box<dyn Error + Send + Sync>>
+    where
+        T: HttpClient,
+    {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackVolume);
         let url = process_url(command, controller.address);
         let json = json!({"volume": volume});
 
-        let response = controller
-            .client
-            .put(url)
-            .header("content-type", "application/json")
-            .json(&json)
-            .send()
-            .await?
-            .status();
+        let response = controller.client.put(&url, &json!({})).await?;
 
         Ok(response)
     }
@@ -303,22 +318,18 @@ pub mod playback {
     /// # Returns
     ///
     /// This function returns a `Result` with a `StatusCode`. If the PUT request is successful, it returns `Ok(StatusCode)`. If the PUT request fails, it returns `Err(reqwest::Error)`.
-    pub async fn playback_shuffle(
-        controller: &Controller,
+    pub async fn playback_shuffle<T>(
+        controller: &Controller<T>,
         shuffle: bool,
-    ) -> Result<StatusCode, reqwest::Error> {
+    ) -> Result<Value, Box<dyn Error + Send + Sync>>
+    where
+        T: HttpClient,
+    {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackShuffle);
         let url = process_url(command, controller.address);
         let json = json!({"shuffle": shuffle});
 
-        let response = controller
-            .client
-            .put(url)
-            .header("content-type", "application/json")
-            .json(&json)
-            .send()
-            .await?
-            .status();
+        let response = controller.client.put(&url, &json!({})).await?;
 
         Ok(response)
     }
@@ -335,22 +346,18 @@ pub mod playback {
     /// # Returns
     ///
     /// This function returns a `Result` that contains a `StatusCode`, if the request was sent successfully, or a `reqwest::Error`, if the request failed.
-    pub async fn playback_repeat(
-        controller: &Controller,
+    pub async fn playback_repeat<T>(
+        controller: &Controller<T>,
         repeat: playlist::Repeat,
-    ) -> Result<StatusCode, reqwest::Error> {
+    ) -> Result<Value, Box<dyn Error + Send + Sync>>
+    where
+        T: HttpClient,
+    {
         let command = &KenkuCommand::KenkuPut(KenkuPutCommand::PlaylistPlaybackRepeat);
         let url = process_url(command, controller.address);
         let json = json!({"repeat": repeat});
 
-        let response = controller
-            .client
-            .put(url)
-            .header("content-type", "application/json")
-            .json(&json)
-            .send()
-            .await?
-            .status();
+        let response = controller.client.put(&url, &json!({})).await?;
 
         Ok(response)
     }
